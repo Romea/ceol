@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<robot name="aroco" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find romea_mobile_base_description)/urdf/base2THD.chassis.xacro" />
+
+  <xacro:property name="conf" value="$(find ceol_description)/config/ceol.yaml" />
+  <xacro:property name="props" value="${load_yaml(conf)}" />
+
+  <!-- Link names -->
+  <xacro:property name="base_link" value="${props['links']['base_link_name']}" />
+  <xacro:property name="base_footprint_link" value="${props['links']['base_footprint_link_name']}" />
+  <xacro:property name="inertial_link" value="${props['links']['inertial_link_name']}" />
+  <xacro:property name="left_sprocket_wheel_spinning_link"
+    value="${props['links']['left_sprocket_wheel_spinning_link_name']}" />
+  <xacro:property name="right_sprocket_wheel_spinning_link"
+    value="${props['links']['right_sprocket_wheel_spinning_link_name']}" />
+  <xacro:property name="front_left_idler_wheel_spinning_link"
+    value="${props['links']['front_left_idler_wheel_spinning_link_name']}" />
+  <xacro:property name="front_right_idler_wheel_spinning_link"
+    value="${props['links']['front_right_idler_wheel_spinning_link_name']}" />
+  <xacro:property name="rear_left_idler_wheel_spinning_link"
+    value="${props['links']['rear_left_idler_wheel_spinning_link_name']}" />
+  <xacro:property name="rear_right_idler_wheel_spinning_link"
+    value="${props['links']['rear_right_idler_wheel_spinning_link_name']}" />
+
+
+  <!-- Joint names -->
+  <xacro:property name="base_footprint_joint"
+    value="${props['joints']['base_footprint_joint_name']}" />
+  <xacro:property name="inertial_joint" value="${props['joints']['inertial_joint_name']}" />
+  <xacro:property name="left_sprocket_wheel_spinning_joint"
+    value="${props['joints']['left_sprocket_wheel_spinning_joint_name']}" />
+  <xacro:property name="right_sprocket_wheel_spinning_joint"
+    value="${props['joints']['right_sprocket_wheel_spinning_joint_name']}" />
+  <xacro:property name="front_left_idler_wheel_spinning_joint"
+    value="${props['joints']['front_left_idler_wheel_spinning_joint_name']}" />
+  <xacro:property name="front_right_idler_wheel_spinning_joint"
+    value="${props['joints']['front_right_idler_wheel_spinning_joint_name']}" />
+  <xacro:property name="rear_left_idler_wheel_spinning_joint"
+    value="${props['joints']['rear_left_idler_wheel_spinning_joint_name']}" />
+  <xacro:property name="rear_right_idler_wheel_spinning_joint"
+    value="${props['joints']['rear_right_idler_wheel_spinning_joint_name']}" />
+
+
+  <!-- Base Properties -->
+  <xacro:property name="aabb_length" value="${props['geometry']['aabb']['length']}" />
+  <xacro:property name="aabb_width" value="${props['geometry']['aabb']['width']}" />
+  <xacro:property name="aabb_height" value="${props['geometry']['aabb']['height']}" />
+  <xacro:property name="aabb_center_x" value="${props['geometry']['aabb']['center'][0]}" />
+  <xacro:property name="aabb_center_y" value="${props['geometry']['aabb']['center'][1]}" />
+  <xacro:property name="aabb_center_z" value="${props['geometry']['aabb']['center'][2]}" />
+
+  <xacro:property name="front_idler_wheel_x" 
+    value= "${props['geometry']['tracks']['front_idler_wheel']['x']}"/>
+  <xacro:property name="rear_idler_wheel_x" 
+    value= "${props['geometry']['tracks']['rear_idler_wheel']['x']}"/>
+
+  <xacro:property name="wheelbase" value="${front_idler_wheel_x-rear_idler_wheel_x}" />
+  <xacro:property name="track" value="${props['geometry']['tracks_distance']}" />
+  <xacro:property name="track_width" value="${props['geometry']['tracks']['width']}" />
+  <xacro:property name="track_thickness" value="${props['geometry']['tracks']['thickness']}" /> 
+ 
+  <xacro:property name="mass_base" value="${props['inertia']['mass']}" />
+  <xacro:property name="mass_center_x" value="${props['inertia']['center'][0]}" />
+  <xacro:property name="mass_center_y" value="${props['inertia']['center'][1]}" />
+  <xacro:property name="mass_center_z" value="${props['inertia']['center'][2]}" />
+
+   <xacro:property name="maximal_wheel_speed"
+    value="${props['tracks_speed_control']['command']['maximal_speed']}" />
+  <xacro:property name="body_reference_x" value="${props['control_point'][0]}" />
+
+  <!-- Wheel Properties -->
+  <xacro:property name="idler_wheel_mass"   
+    value="${props['geometry']['tracks']['front_idler_wheel']['mass']}" />
+  <xacro:property name="idler_wheel_radius" 
+    value="${props['geometry']['tracks']['front_idler_wheel']['radius']}" />
+  <xacro:property name="roller_wheel_mass" 
+    value="${props['geometry']['tracks']['roller_wheels']['mass']}" />
+  <xacro:property name="roller_wheel_radius" 
+    value="${props['geometry']['tracks']['roller_wheels']['radius']}" />
+  <xacro:property name="sprocket_wheel_mass" 
+    value="${props['geometry']['tracks']['sprocket_wheel']['mass']}" />
+  <xacro:property name="sprocket_wheel_radius" 
+    value="${props['geometry']['tracks']['sprocket_wheel']['radius']}" />
+  <xacro:property name="sprocket_wheel_x" 
+    value="${props['geometry']['tracks']['sprocket_wheel']['x']}" />
+  <xacro:property name="sprocket_wheel_z" 
+    value="${props['geometry']['tracks']['sprocket_wheel']['z']}" />
+
+  <!-- Wheel Mounting Positions -->
+  <xacro:property name="ground_clearance"
+    value="${props['geometry']['ground_clearance']}" />
+  <xacro:property name="chassis_height" 
+    value="${props['geometry']['tracks']['front_idler_wheel']['radius']}" />
+
+  <xacro:macro name="aroco" params="mode prefix">
+
+    <!-- visual chassis -->
+    <xacro:chassis>
+      <!-- visual chassis -->
+      <visual>
+        <geometry>
+          <box size="${aabb_length} ${aabb_width} ${aabb_height}"/>
+        </geometry>
+        <origin xyz="${aabb_center_x-body_reference_x} ${aabb_center_y}  ${aabb_center_z-chassis_height}" rpy="0 0 0" />
+        <material name="grey">
+          <color rgba="0.6 0.6 0.6 1"/>
+        </material>
+      </visual>
+      <!-- <visual>
+        <origin xyz="${0.03-body_reference_x} 0 ${chassis_height-aabb_height/2}"
+          rpy="0 0 ${M_PI/2.0}" />
+        <geometry>
+          <mesh filename="package://ceol_description/meshes/chassis.dae" />
+        </geometry>
+      </visual> -->
+
+      <!-- visual sprocker wheel -->
+      <cylinder length="${track_width}" radius="${sprocket_wheel_radius+track_thickness}"/>
+      <!-- <mesh filename="package://ceol_description/meshes/sprocket_wheel.dae" /> -->
+
+      <!-- visual visual idler wheel -->
+      <cylinder length="${track_width}" radius="${idler_wheel_radius+track_thickness}"/>
+      <!-- <mesh filename="package://ceol_description/meshes/idler_wheel.dae" /> -->
+    </xacro:chassis>
+
+  </xacro:macro>
+
+</robot>
