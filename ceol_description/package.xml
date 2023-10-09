@@ -4,7 +4,7 @@
 
   <name>ceol_description</name>
   <version>0.0.0</version>
-  <description>Package with URDF and configuration files of aroco robot.</description>
+  <description>Package with URDF and configuration files of ceol robot.</description>
 
   <maintainer email="jean.laneurit@inrae.fr">Jean Laneurit</maintainer>
 

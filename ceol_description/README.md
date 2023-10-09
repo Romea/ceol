@@ -1,12 +1,12 @@
 # 1 Overview #
 
-This package contains the description of aroco robot
+This package contains the description of ceol robot
 
 # 2 Package organization #
 
 This package is organized into subdirectories as follows:
 
-  - urdf/ contains (xacro representations of) urdf descriptions of aroco robot.
+  - urdf/ contains (xacro representations of) urdf descriptions of ceol robot.
 
   - config/ contains characteristic of each robot:
 

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="color">
+   <xacro:macro name="ceol_gazebo_material" params="link">
+      <gazebo reference="${link}">
+         <visual>
+            <material>
+               <script>
+                   <uri>package://alpo_description/meshes/ceol.material</uri>
+                   <name>ceol</name>
+               </script>
+            </material>
+         </visual>
+      </gazebo>
+   </xacro:macro>
+</robot>

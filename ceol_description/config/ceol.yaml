@@ -1,7 +1,8 @@
 # kinematic: skid_steering
 type: 2THD
 geometry:
-  tracks_distance: 1.137
+  # tracks_distance: 1.137
+  tracks_distance: 0.99
   tracks:
     width: 0.18
     thickness: 0.03

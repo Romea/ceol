@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
-<robot name="aroco" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="ceol" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <!-- <xacro:include filename="$(find ceol_description)/urdf/color.xacro" /> -->
   <xacro:include filename="$(find romea_mobile_base_description)/urdf/base2THD.chassis.xacro" />
 
   <xacro:property name="conf" value="$(find ceol_description)/config/ceol.yaml" />
@@ -93,27 +94,28 @@
   <xacro:property name="chassis_height" 
     value="${props['geometry']['tracks']['front_idler_wheel']['radius']}" />
 
-  <xacro:macro name="aroco" params="mode prefix">
+  <xacro:macro name="ceol" params="mode prefix">
 
     <!-- visual chassis -->
     <xacro:chassis>
       <!-- visual chassis -->
+      <!-- <visual> -->
+      <!--   <geometry> -->
+      <!--     <box size="${aabb_length} ${aabb_width} ${aabb_height}"/> -->
+      <!--   </geometry> -->
+      <!--   <origin xyz="${aabb_center_x-body_reference_x} ${aabb_center_y}  ${aabb_center_z-chassis_height}" rpy="0 0 0" /> -->
+      <!--   <material name="grey"> -->
+      <!--     &#60;&#33;&#45;&#45; <color rgba="0.6 0.6 0.6 1"/> &#45;&#45;&#62; -->
+      <!--     <color rgba="0.99 0.6 0.6 1"/> -->
+      <!--   </material> -->
+      <!-- </visual> -->
       <visual>
+        <origin xyz="0 0 0" rpy="0 0 ${pi/2}" />
         <geometry>
-          <box size="${aabb_length} ${aabb_width} ${aabb_height}"/>
+          <!-- <box size="${aabb_length} ${aabb_width} ${aabb_height}"/> -->
+          <mesh filename="package://ceol_description/meshes/ceol.dae" />
         </geometry>
-        <origin xyz="${aabb_center_x-body_reference_x} ${aabb_center_y}  ${aabb_center_z-chassis_height}" rpy="0 0 0" />
-        <material name="grey">
-          <color rgba="0.6 0.6 0.6 1"/>
-        </material>
       </visual>
-      <!-- <visual>
-        <origin xyz="${0.03-body_reference_x} 0 ${chassis_height-aabb_height/2}"
-          rpy="0 0 ${M_PI/2.0}" />
-        <geometry>
-          <mesh filename="package://ceol_description/meshes/chassis.dae" />
-        </geometry>
-      </visual> -->
 
       <!-- visual sprocker wheel -->
       <cylinder length="${track_width}" radius="${sprocket_wheel_radius+track_thickness}"/>
@@ -122,7 +124,17 @@
       <!-- visual visual idler wheel -->
       <cylinder length="${track_width}" radius="${idler_wheel_radius+track_thickness}"/>
       <!-- <mesh filename="package://ceol_description/meshes/idler_wheel.dae" /> -->
+
     </xacro:chassis>
+
+    <gazebo reference="${prefix}${base_link}">
+      <material>
+        <script>
+          <uri>package://alpo_description/meshes/ceol.material</uri>
+          <name>ceol</name>
+        </script>
+      </material>
+    </gazebo>
 
   </xacro:macro>
 
