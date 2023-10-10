@@ -2,7 +2,7 @@
 type: 2THD
 geometry:
   # tracks_distance: 1.137
-  tracks_distance: 0.99
+  tracks_distance: 0.91  # mesured on the INRAE robot
   tracks:
     width: 0.18
     thickness: 0.03
