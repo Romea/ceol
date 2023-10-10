@@ -113,7 +113,7 @@
         <origin xyz="0 0 0" rpy="0 0 ${pi/2}" />
         <geometry>
           <!-- <box size="${aabb_length} ${aabb_width} ${aabb_height}"/> -->
-          <mesh filename="package://ceol_description/meshes/ceol.dae" />
+          <mesh filename="package://ceol_description/meshes/ceol_chassis.dae" />
         </geometry>
       </visual>
 
@@ -126,6 +126,36 @@
       <!-- <mesh filename="package://ceol_description/meshes/idler_wheel.dae" /> -->
 
     </xacro:chassis>
+
+    <link name="${prefix}left_wheel_model">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 ${pi/2}" />
+        <geometry>
+          <mesh filename="package://ceol_description/meshes/ceol_roue.dae" />
+        </geometry>
+      </visual>
+    </link>
+
+    <joint name="${prefix}left_wheel_model_joint" type="fixed">
+      <origin xyz="0 ${track/2} 0" rpy="0 0 0" />
+      <child link="${prefix}left_wheel_model" />
+      <parent link="${prefix}${base_link}" />
+    </joint>
+
+    <link name="${prefix}right_wheel_model">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 ${pi/2}" />
+        <geometry>
+          <mesh filename="package://ceol_description/meshes/ceol_roue.dae" scale="-1 1 1"/>
+        </geometry>
+      </visual>
+    </link>
+
+    <joint name="${prefix}right_wheel_model_joint" type="fixed">
+      <origin xyz="0 ${-track/2} 0" rpy="0 0 0" />
+      <child link="${prefix}right_wheel_model" />
+      <parent link="${prefix}${base_link}" />
+    </joint>
 
     <gazebo reference="${prefix}${base_link}">
       <material>

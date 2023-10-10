@@ -46,7 +46,7 @@ inertia:
   center: [0., 0., 0.71650]
   z_moment: 239.
 
-control_point : [0.43, 0.0, 0.0]
+control_point : [0.0, 0.0, 0.0]
 
 joints:
   base_footprint_joint_name : base_footprint
