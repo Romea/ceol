@@ -58,5 +58,5 @@ def test_hardware_plugin_name():
 def test_controller_filename_name():
     assert (
         urdf_xml("simulation").find("gazebo/plugin/controller_manager_config_file").text
-        == get_package_share_directory("aroco_bringup") + "/config/controller_manager.yaml"
+        == get_package_share_directory("ceol_bringup") + "/config/controller_manager.yaml"
     )
