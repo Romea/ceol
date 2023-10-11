@@ -34,5 +34,5 @@ repositories:
     version: main
   romea_ros2/interfaces/vehicles/aroco:
     type: git
-    url: https://github.com/Romea/aroco.git
+    url: https://github.com/Romea/ceol.git
     version: main

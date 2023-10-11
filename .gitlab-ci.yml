@@ -29,7 +29,7 @@ galactic_focal_build:
   script:
     - colcon build
     - source install/setup.bash
-    - colcon test --packages-select aroco_bringup aroco_description aroco_hardware
+    - colcon test --packages-select ceol_bringup ceol_description ceol_hardware
     - colcon test-result --verbose
 
 # humble
@@ -39,5 +39,5 @@ humble_jammy_build:
   script:
     - colcon build
     - source install/setup.bash
-    - colcon test --packages-select aroco_bringup aroco_description aroco_hardware
+    - colcon test --packages-select ceol_bringup ceol_description ceol_hardware
     - colcon test-result --verbose
