@@ -32,7 +32,7 @@ repositories:
     type: git
     url: git@gitlab-ssh.irstea.fr:romea_ros2/interfaces/vehicles/romea_mobile_base.git
     version: devel
-  romea_ros2/interfaces/vehicles/aroco:
+  romea_ros2/interfaces/vehicles/ceol:
     type: git
     url: git@gitlab-ssh.irstea.fr:romea_ros2/interfaces/vehicles/ceol.git
     version: devel

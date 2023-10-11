@@ -32,7 +32,7 @@ repositories:
     type: git
     url: https://github.com/Romea/romea-ros2-mobile-base.git
     version: main
-  romea_ros2/interfaces/vehicles/aroco:
+  romea_ros2/interfaces/vehicles/ceol:
     type: git
     url: https://github.com/Romea/ceol.git
     version: main
