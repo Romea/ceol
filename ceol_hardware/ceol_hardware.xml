@@ -3,7 +3,7 @@
          type="romea::CeolHardware"
          base_class_type="hardware_interface::SystemInterface">
     <description>
-      Aroco hardware interface
+      Ceol hardware interface
     </description>
   </class>
 </library>

@@ -25,6 +25,7 @@ find_package(romea_core_mobile_base REQUIRED)
 find_package(romea_common_utils REQUIRED)
 find_package(romea_mobile_base_utils REQUIRED)
 find_package(romea_mobile_base_hardware REQUIRED)
+find_package(ceol_msgs)
 
 
 ## COMPILE
@@ -56,6 +57,7 @@ ament_target_dependencies(
   romea_common_utils
   romea_mobile_base_utils
   romea_mobile_base_hardware
+  ceol_msgs
 )
 
 # Causes the visibility macros to use dllexport rather than dllimport,

@@ -13,8 +13,8 @@
 // limitations under the License.
 
 
-#ifndef AROCO_HARDWARE__AROCO_HARDWARE_HPP_
-#define AROCO_HARDWARE__AROCO_HARDWARE_HPP_
+#ifndef CEOL_HARDWARE__CEOL_HARDWARE_HPP_
+#define CEOL_HARDWARE__CEOL_HARDWARE_HPP_
 
 // std
 #include <array>
@@ -38,8 +38,12 @@
 namespace romea
 {
 
-class CeolHardware : public HardwareSystemInterface2TD
+class CeolHardware : public HardwareSystemInterface2THD
 {
+public:
+  using ImuMsg = sensor_msgs::msg::Imu;
+  using ImplementPositionMsg = ceol_msgs::msg::ImplementPosition;
+
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(CeolHardware);
 
@@ -81,7 +85,6 @@ private:
 
   bool send_command_();
 
-
   void send_activate_auto_mode_();
 
   void send_deactivate_auto_mode_();
@@ -105,6 +108,7 @@ private:
     float & angle);
 
   void ens_control_callback_();
+
 
   void try_publish_imu_data_(const uint32_t & stamp);
 
@@ -148,8 +152,8 @@ private:
   bool speed_limitation_;
 
   rclcpp::Node::SharedPtr node_;
-  rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub_;
 
+  std::mutex imu_mutex_;
   uint32_t imu_acceleration_x_stamp_;
   float imu_acceleration_x_measure_;
   uint32_t imu_acceleration_y_stamp_;
@@ -165,7 +169,15 @@ private:
   uint32_t imu_angular_speed_z_stamp_;
   float imu_angular_speed_z_measure_;
   float imu_angle_z_measure_;
-  std::mutex imu_mutex_;
+  rclcpp::Publisher<ImuMsg>::SharedPtr imu_pub_;
+
+
+  std::atomic<uint16_t> desired_implement_position_;
+  void start_implement_actuator_control_(uint32_t actuator_id);
+  void control_implement_actuator_position_(uint32_t actuator_id);
+  void implement_position_callback_(ImplementPositionMsg::ConstSharedPtr msg);
+  rclcpp::Subscription<ImplementPositionMsg>::SharedPtr implement_position_sub_;
+
 
 #ifndef NDEBUG
   std::fstream debug_file_;
@@ -174,4 +186,4 @@ private:
 
 }  // namespace romea
 
-#endif  // AROCO_HARDWARE__AROCO_HARDWARE_HPP_
+#endif  // CEOL_HARDWARE__CEOL_HARDWARE_HPP_
