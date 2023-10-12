@@ -66,8 +66,6 @@ def launch_setup(context, *args, **kwargs):
         parameters=[
             {"robot_description": base_ros2_control_description},
             controller_manager_yaml_file],
-        namespace="base",
-        # output="screen",
     )
 
     controller = IncludeLaunchDescription(
