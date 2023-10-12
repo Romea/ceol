@@ -52,7 +52,7 @@ def launch_setup(context, *args, **kwargs):
 
     base_controller_yaml_file = (
         get_package_share_directory("ceol_bringup")
-        + "/config/mobile_base_controller.yaml"
+        + "/config/mobile_base_controller_"+mode+".yaml"
     )
 
     base_ros2_control_description_file = "/tmp/"+robot_prefix+base_name+"_ros2_control.urdf"

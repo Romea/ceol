@@ -1,0 +1,24 @@
+/**:
+  ros__parameters:
+    update_rate: 10
+    controller:
+      base_frame_id: base_link
+      odom_frame_id: odom
+      enable_odom_tf: false
+      publish_rate: 50.0
+      timeout: 0.5
+      angular_speed:
+        pid:
+          kp: 1.0
+          ki: 0.0
+          kd: 0.0
+          imin: -30.0
+          imax: 30.0
+          error_epsilon: 0.017453
+        filter:
+          alpha: 0.9  
+#      command_limits:
+#        minimal_longitudinal_speed:
+#        minimal_longitudinal_speed:
+#        maximal_angular_speed:
+#        maximal_angular_speed:

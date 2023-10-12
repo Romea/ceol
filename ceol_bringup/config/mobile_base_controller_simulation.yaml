@@ -9,11 +9,12 @@
       timeout: 0.5
       angular_speed:
         pid:
-          kp: 1.0
-          ki: 2.0
-          kd: 3.0
-          imin: 4.0
-          imax: 5.0
+          kp: 1.95
+          ki: 0.2
+          kd: 0.0
+          imin: -30.0
+          imax: 30.0
+          error_epsilon: 0.017453
         filter:
           alpha: 0.9  
 #      command_limits:
