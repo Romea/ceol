@@ -47,8 +47,8 @@ const uint32_t IMU_ANGULAR_SPEED_Y_MEASUREMENT_ID = 0x58F;
 const uint32_t IMU_ANGULAR_SPEED_Z_MEASUREMENT_ID = 0x20F;
 const uint32_t ENS_CONTROL_ID = 0x211;
 
-const uint32_t IMPLEMENT_LEFT_ACTUATOR_MEASUREMENT_ID = 0x18EFC781;
-const uint32_t IMPLEMENT_RIGHT_ACTUATOR_MEASUREMENT_ID = 0x18EFC681;
+const uint32_t IMPLEMENT_LEFT_ACTUATOR_MEASUREMENT_ID = 0x18FF00C7;
+const uint32_t IMPLEMENT_RIGHT_ACTUATOR_MEASUREMENT_ID = 0x18FF00C6;
 const uint32_t IMPLEMENT_LEFT_ACTUATOR_COMMAND_ID = 0x18EFC781;
 const uint32_t IMPLEMENT_RIGHT_ACTUATOR_COMMAND_ID = 0x18EFC681;
 const uint16_t IMPLEMENT_LOWEST_ACTUATORS_POSITION_ = 1050;
@@ -83,7 +83,6 @@ CeolHardware::CeolHardware()
   speed_limitation_(false),
   desired_implement_position_(std::numeric_limits<uint16_t>::quiet_NaN())
 {
-  std::cout << " construteur" << std::endl;
 #ifndef NDEBUG
   open_log_file_();
   write_log_header_();
@@ -145,15 +144,22 @@ CeolHardware::on_init(const hardware_interface::HardwareInfo & hardware_info)
     std::cout << " hardware node_name " << ns << std::endl;
     node_ = rclcpp::Node::make_shared("hardware", ns);
 
-    //   imu_pub_ = node_->create_publisher<sensor_msgs::msg::Imu>(
-    //     ns + "/imu/data", sensor_data_qos());
+    imu_frame_id_ = hardware_info.name + "_imu_link";
+
+    imu_pub_ = node_->create_publisher<sensor_msgs::msg::Imu>(
+      ns + "/imu/data", sensor_data_qos());
+
+    auto callback = std::bind(
+      &CeolHardware::implement_position_callback_, this, std::placeholders::_1);
+
+    implement_position_sub_ = node_->create_subscription<ImplementPositionMsg>(
+      ns + "/implement_position", best_effort(1), callback);
 
 
-    //   auto callback = std::bind(
-    //     &CeolHardware::implement_position_callback_, this, std::placeholders::_1);
-
-    //   implement_position_sub_ = node_->create_subscription<ImplementPositionMsg>(
-    //     ns + "/implement_position", best_effort(1), callback);
+    RCLCPP_INFO_STREAM(
+      rclcpp::get_logger("CeolHardware"),
+      implement_position_sub_->get_topic_name() << " " <<
+        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
   } else {
@@ -173,6 +179,7 @@ hardware_interface::return_type CeolHardware::read(
 {
   // RCLCPP_INFO(rclcpp::get_logger("CeolHardware"), "Read data from robot");
 
+  rclcpp::spin_some(node_);
   set_hardware_state_();
 
   std::cout << "spocket wheels speeds " <<
@@ -237,33 +244,33 @@ void CeolHardware::receive_data_()
         case RIGHT_SPROCKET_WHEEL_MEASUREMENTS_ID:
           decode_right_track_measurements_();
           break;
-        // case IMPLEMENT_RIGHT_ACTUATOR_MEASUREMENT_ID:
-        //   control_implement_actuator_position_(IMPLEMENT_RIGHT_ACTUATOR_COMMAND_ID);
-        //   break;
-        // case IMPLEMENT_LEFT_ACTUATOR_MEASUREMENT_ID:
-        //   control_implement_actuator_position_(IMPLEMENT_LEFT_ACTUATOR_COMMAND_ID);
-        //   break;
-        // case IMU_ACCELERATION_X_MEASUREMENT_ID:
-        //   decode_imu_acceleration_(imu_acceleration_x_stamp_, imu_acceleration_x_measure_);
-        //   break;
-        // case IMU_ACCELERATION_Y_MEASUREMENT_ID:
-        //   decode_imu_acceleration_(imu_acceleration_y_stamp_, imu_acceleration_y_measure_);
-        //   break;
-        // case IMU_ACCELERATION_Z_MEASUREMENT_ID:
-        //   decode_imu_acceleration_(imu_acceleration_z_stamp_, imu_acceleration_z_measure_);
-        //   break;
-        // case IMU_ANGULAR_SPEED_X_MEASUREMENT_ID:
-        //   decode_imu_angular_speed_(
-        //     imu_angular_speed_x_stamp_, imu_angular_speed_x_measure_, imu_angle_x_measure_);
-        //   break;
-        // case IMU_ANGULAR_SPEED_Y_MEASUREMENT_ID:
-        //   decode_imu_angular_speed_(
-        //     imu_angular_speed_y_stamp_, imu_angular_speed_y_measure_, imu_angle_y_measure_);
-        //   break;
-        // case IMU_ANGULAR_SPEED_Z_MEASUREMENT_ID:
-        //   decode_imu_angular_speed_(
-        //     imu_angular_speed_y_stamp_, imu_angular_speed_y_measure_, imu_angle_y_measure_);
-        //   break;
+        case IMPLEMENT_RIGHT_ACTUATOR_MEASUREMENT_ID:
+          control_implement_actuator_position_(IMPLEMENT_RIGHT_ACTUATOR_COMMAND_ID);
+          break;
+        case IMPLEMENT_LEFT_ACTUATOR_MEASUREMENT_ID:
+          control_implement_actuator_position_(IMPLEMENT_LEFT_ACTUATOR_COMMAND_ID);
+          break;
+        case IMU_ACCELERATION_X_MEASUREMENT_ID:
+          decode_imu_acceleration_(imu_acceleration_x_stamp_, imu_acceleration_x_measure_);
+          break;
+        case IMU_ACCELERATION_Y_MEASUREMENT_ID:
+          decode_imu_acceleration_(imu_acceleration_y_stamp_, imu_acceleration_y_measure_);
+          break;
+        case IMU_ACCELERATION_Z_MEASUREMENT_ID:
+          decode_imu_acceleration_(imu_acceleration_z_stamp_, imu_acceleration_z_measure_);
+          break;
+        case IMU_ANGULAR_SPEED_X_MEASUREMENT_ID:
+          decode_imu_angular_speed_(
+            imu_angular_speed_x_stamp_, imu_angular_speed_x_measure_, imu_angle_x_measure_);
+          break;
+        case IMU_ANGULAR_SPEED_Y_MEASUREMENT_ID:
+          decode_imu_angular_speed_(
+            imu_angular_speed_y_stamp_, imu_angular_speed_y_measure_, imu_angle_y_measure_);
+          break;
+        case IMU_ANGULAR_SPEED_Z_MEASUREMENT_ID:
+          decode_imu_angular_speed_(
+            imu_angular_speed_z_stamp_, imu_angular_speed_z_measure_, imu_angle_z_measure_);
+          break;
         case ENS_CONTROL_ID:
           ens_control_callback_();
           break;
@@ -280,8 +287,9 @@ void CeolHardware::receive_data_()
 bool CeolHardware::send_command_()
 {
   return send_command_(
-    left_sprocket_wheel_angular_speed_command_ * virtual_sprocket_wheel_radius_,
-    right_sprocket_wheel_angular_speed_command_ * virtual_sprocket_wheel_radius_);
+    left_sprocket_wheel_angular_speed_command_,
+    right_sprocket_wheel_angular_speed_command_);
+
 }
 
 //-----------------------------------------------------------------------------
@@ -313,11 +321,16 @@ bool CeolHardware::send_command_(
 
 
 //-----------------------------------------------------------------------------
-bool CeolHardware::send_data_(uint32_t id, uint32_t length)
+bool CeolHardware::send_data_(uint32_t id, uint32_t length, bool extended)
 {
   try {
     drivers::socketcan::CanId can_id(id, 0, length);
-    can_sender_.send(sended_frame_data_.data(), length, can_id, TIMEOUT);
+    if (extended) {
+      can_sender_.send(sended_frame_data_.data(), length, can_id.extended(), TIMEOUT);
+    } else {
+      can_sender_.send(sended_frame_data_.data(), length, can_id, TIMEOUT);
+
+    }
     return true;
   } catch (drivers::socketcan::SocketCanTimeout & e) {
     RCLCPP_ERROR_STREAM(
@@ -328,6 +341,10 @@ bool CeolHardware::send_data_(uint32_t id, uint32_t length)
       rclcpp::get_logger("CeolHardware"),
       "Send can data" << std::hex << id << " : " << e.what());
   }
+  RCLCPP_ERROR_STREAM(
+    rclcpp::get_logger("CeolHardware"),
+    "Send data failed");
+
   return false;
 }
 
@@ -414,6 +431,8 @@ void CeolHardware::ens_control_callback_()
   speed_limitation_ = (received_frame_data_[0] & 0x04) >> 2;
   send_nmt_();
 
+  // std::cout << "go_to_auto" << go_to_auto << " " << "MotionAuthorized" << motion_authorized <<
+  //   " speed limitation" << speed_limitation_ << std::endl;
   if (go_to_auto && !motion_authorized && !pending_activation_ && !caius_auto_) {
     RCLCPP_WARN_STREAM(node_->get_logger(), "TRYING TO ENTER IN AUTO MODE");
     pending_activation_ = true;
@@ -485,8 +504,8 @@ void CeolHardware::try_publish_imu_data_(const uint32_t & stamp)
     double sp = sin(pitch * 0.5);
     double cy = cos(yaw * 0.5);
     double sy = sin(yaw * 0.5);
-    // msg.header.stamp = ros::Time::now();
-    // msg.header.frame_id = "imu_link";
+    msg.header.stamp = node_->get_clock()->now();
+    msg.header.frame_id = imu_frame_id_;
     msg.angular_velocity.x = imu_angular_speed_x_measure_;
     msg.angular_velocity.y = imu_angular_speed_y_measure_;
     msg.angular_velocity.z = imu_angular_speed_z_measure_;
@@ -505,13 +524,13 @@ void CeolHardware::try_publish_imu_data_(const uint32_t & stamp)
 //-----------------------------------------------------------------------------
 void CeolHardware::implement_position_callback_(ImplementPositionMsg::ConstSharedPtr msg)
 {
-  double percentage = std::max(msg->position, IMPLEMENT_POSITION_MSG_MAXIMAL_VALUE) / 100.;
+  double percentage = std::min(msg->position, IMPLEMENT_POSITION_MSG_MAXIMAL_VALUE) / 10000.;
 
   uint16_t desired_implement_position = static_cast<uint16_t>(
     percentage * IMPLEMENT_HIGHEST_ACTUATORS_POSITION_ +
     (1 - percentage) * IMPLEMENT_LOWEST_ACTUATORS_POSITION_);
 
-  if (desired_implement_position != desired_implement_position_.load()) {
+  if (desired_implement_position != desired_implement_position_.load() && caius_auto_) {
     start_implement_actuator_control_(IMPLEMENT_LEFT_ACTUATOR_COMMAND_ID);
     start_implement_actuator_control_(IMPLEMENT_RIGHT_ACTUATOR_COMMAND_ID);
   }
@@ -530,7 +549,7 @@ void CeolHardware::start_implement_actuator_control_(uint32_t actuator_id)
   sended_frame_data_[5] = 0x00;
   sended_frame_data_[6] = 0x00;
   sended_frame_data_[7] = 0x00;
-  send_data_(actuator_id, 8);
+  send_data_(actuator_id, 8, true);
 }
 
 
@@ -547,6 +566,7 @@ void CeolHardware::control_implement_actuator_position_(uint32_t actuator_id)
     ((received_frame_data_[1] << 8) + received_frame_data_[0]));
 
   auto desired_implement_position = desired_implement_position_.load();
+
   if (std::isfinite(desired_implement_position) && caius_auto_) {
     if (std::abs(desired_implement_position - actuator_position_measure) > 10) {
       sended_frame_data_[0] = desired_implement_position & 0xFF;
@@ -557,7 +577,7 @@ void CeolHardware::control_implement_actuator_position_(uint32_t actuator_id)
       sended_frame_data_[5] = 0x00;
       sended_frame_data_[6] = 0x00;
       sended_frame_data_[7] = 0x00;
-      send_data_(actuator_id, 8);
+      send_data_(actuator_id, 8, true);
     }
   }
 }

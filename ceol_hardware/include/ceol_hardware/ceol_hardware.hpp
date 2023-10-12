@@ -74,7 +74,7 @@ private:
     const hardware_interface::HardwareInfo & hardware_info) override;
 
 
-  bool send_data_(uint32_t id, uint32_t length);
+  bool send_data_(uint32_t id, uint32_t length, bool extended = false);
 
   bool send_command_(
     const float & left_sprocket_angular_speed_command,
@@ -135,8 +135,8 @@ private:
 
   drivers::socketcan::SocketCanSender can_sender_;
   drivers::socketcan::SocketCanReceiver can_receiver_;
-  std::array<uint8_t, 8> sended_frame_data_;
-  std::array<uint8_t, 8> received_frame_data_;
+  std::array<uint8_t, 16> sended_frame_data_;
+  std::array<uint8_t, 16> received_frame_data_;
 
   float virtual_sprocket_wheel_radius_;
   float left_sprocket_wheel_angular_speed_command_;
@@ -154,6 +154,7 @@ private:
   rclcpp::Node::SharedPtr node_;
 
   std::mutex imu_mutex_;
+  std::string imu_frame_id_;
   uint32_t imu_acceleration_x_stamp_;
   float imu_acceleration_x_measure_;
   uint32_t imu_acceleration_y_stamp_;
@@ -170,7 +171,6 @@ private:
   float imu_angular_speed_z_measure_;
   float imu_angle_z_measure_;
   rclcpp::Publisher<ImuMsg>::SharedPtr imu_pub_;
-
 
   std::atomic<uint16_t> desired_implement_position_;
   void start_implement_actuator_control_(uint32_t actuator_id);
