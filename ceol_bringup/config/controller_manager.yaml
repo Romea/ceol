@@ -6,5 +6,5 @@
       type: joint_state_broadcaster/JointStateBroadcaster
 
     mobile_base_controller:
-      type: romea_mobile_base_controllers/MobileBaseController2TD
+      type: romea_mobile_base_controllers/MobileBaseEnhancedController2TD
 
