@@ -63,8 +63,8 @@ def launch_setup(context, *args, **kwargs):
     )
 
     teleop = Node(
-        package="ceol_teleop",
-        executable="ceol_teleop_node",
+        package="romea_teleop_drivers",
+        executable="skid_steering_teleop_node",
         name="teleop",
         parameters=[teleop_configuration],
         output="screen",
