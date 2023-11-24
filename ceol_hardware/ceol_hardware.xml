@@ -1,6 +1,6 @@
 <library path="ceol_hardware">
   <class name="ceol_hardware/CeolHardware"
-         type="romea::CeolHardware"
+         type="romea::ros2::CeolHardware"
          base_class_type="hardware_interface::SystemInterface">
     <description>
       Ceol hardware interface

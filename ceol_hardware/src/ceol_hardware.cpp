@@ -63,6 +63,8 @@ const std::chrono::milliseconds TIMEOUT(5);
 
 namespace romea
 {
+namespace ros2
+{
 
 //-----------------------------------------------------------------------------
 CeolHardware::CeolHardware()
@@ -214,7 +216,7 @@ hardware_interface::return_type CeolHardware::write(
 //-----------------------------------------------------------------------------
 void CeolHardware::get_hardware_command_()
 {
-  HardwareCommand2TD command = hardware_interface_->get_command();
+  core::HardwareCommand2TD command = hardware_interface_->get_command();
   left_sprocket_wheel_angular_speed_command_ = command.leftSprocketWheelSpinningSetPoint;
   right_sprocket_wheel_angular_speed_command_ = command.rightSprocketWheelSpinningSetPoint;
 }
@@ -222,7 +224,7 @@ void CeolHardware::get_hardware_command_()
 //-----------------------------------------------------------------------------
 void CeolHardware::set_hardware_state_()
 {
-  HardwareState2TD state;
+  core::HardwareState2TD state;
   state.leftSprocketWheelSpinningMotion.velocity = left_sprocket_wheel_angular_speed_measure_;
   state.leftSprocketWheelSpinningMotion.torque = left_sprocket_wheel_torque_measure_;
   state.rightSprocketWheelSpinningMotion.velocity = right_sprocket_wheel_angular_speed_measure_;
@@ -640,7 +642,8 @@ void CeolHardware::write_log_data_()
 }
 #endif
 
+}  // namespace ros2
 }  // namespace romea
 
 #include "pluginlib/class_list_macros.hpp"
-PLUGINLIB_EXPORT_CLASS(romea::CeolHardware, hardware_interface::SystemInterface)
+PLUGINLIB_EXPORT_CLASS(romea::ros2::CeolHardware, hardware_interface::SystemInterface)

@@ -38,6 +38,8 @@
 
 namespace romea
 {
+namespace ros2
+{
 
 class CeolHardware : public HardwareSystemInterface2THD
 {
@@ -185,6 +187,7 @@ private:
 #endif
 };
 
+}  // namespace ros2
 }  // namespace romea
 
 #endif  // CEOL_HARDWARE__CEOL_HARDWARE_HPP_
