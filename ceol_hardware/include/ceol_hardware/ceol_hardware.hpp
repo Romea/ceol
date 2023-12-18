@@ -51,6 +51,9 @@ public:
   RCLCPP_SHARED_PTR_DEFINITIONS(CeolHardware);
 
   CeolHardware();
+
+  virtual ~CeolHardware();
+
   #if ROS_DISTRO == ROS_GALACTIC
   hardware_interface::return_type read()override;
 

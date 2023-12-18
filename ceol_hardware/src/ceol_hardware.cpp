@@ -68,7 +68,7 @@ namespace ros2
 
 //-----------------------------------------------------------------------------
 CeolHardware::CeolHardware()
-: HardwareSystemInterface2THD(),
+: HardwareSystemInterface2THD("CeolHardware"),
   can_receiver_thread_(nullptr),
   can_receiver_thread_run_(false),
   can_sender_("can0"),
@@ -91,6 +91,15 @@ CeolHardware::CeolHardware()
   open_log_file_();
   write_log_header_();
 #endif
+}
+
+//-----------------------------------------------------------------------------
+CeolHardware::~CeolHardware()
+{
+  // force deactive when interface has not been deactivated by controller manager but by ctrl-c
+  if (lifecycle_state_.id() == 3) {
+    on_deactivate(lifecycle_state_);
+  }
 }
 
 //-----------------------------------------------------------------------------
