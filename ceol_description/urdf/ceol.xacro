@@ -3,6 +3,8 @@
 
   <!-- <xacro:include filename="$(find ceol_description)/urdf/color.xacro" /> -->
   <xacro:include filename="$(find romea_mobile_base_description)/urdf/base2THD.chassis.xacro" />
+  <xacro:include filename="$(find ceol_description)/urdf/visual/chassis.xacro" />
+  <xacro:include filename="$(find ceol_description)/urdf/visual/wheels.xacro" />
 
   <xacro:property name="conf" value="$(find ceol_description)/config/ceol.yaml" />
   <xacro:property name="props" value="${load_yaml(conf)}" />
@@ -51,80 +53,56 @@
   <xacro:property name="aabb_center_y" value="${props['geometry']['aabb']['center'][1]}" />
   <xacro:property name="aabb_center_z" value="${props['geometry']['aabb']['center'][2]}" />
 
-  <xacro:property name="front_idler_wheel_x" 
-    value= "${props['geometry']['tracks']['front_idler_wheel']['x']}"/>
-  <xacro:property name="rear_idler_wheel_x" 
-    value= "${props['geometry']['tracks']['rear_idler_wheel']['x']}"/>
+  <xacro:property name="front_idler_wheel_x"
+    value="${props['geometry']['tracks']['front_idler_wheel']['x']}" />
+  <xacro:property name="rear_idler_wheel_x"
+    value="${props['geometry']['tracks']['rear_idler_wheel']['x']}" />
 
   <xacro:property name="wheelbase" value="${front_idler_wheel_x-rear_idler_wheel_x}" />
   <xacro:property name="track" value="${props['geometry']['tracks_distance']}" />
   <xacro:property name="track_width" value="${props['geometry']['tracks']['width']}" />
-  <xacro:property name="track_thickness" value="${props['geometry']['tracks']['thickness']}" /> 
- 
+  <xacro:property name="track_thickness" value="${props['geometry']['tracks']['thickness']}" />
+
   <xacro:property name="mass_base" value="${props['inertia']['mass']}" />
   <xacro:property name="mass_center_x" value="${props['inertia']['center'][0]}" />
   <xacro:property name="mass_center_y" value="${props['inertia']['center'][1]}" />
   <xacro:property name="mass_center_z" value="${props['inertia']['center'][2]}" />
 
-   <xacro:property name="maximal_wheel_speed"
+  <xacro:property name="maximal_wheel_speed"
     value="${props['tracks_speed_control']['command']['maximal_speed']}" />
   <xacro:property name="body_reference_x" value="${props['control_point'][0]}" />
 
   <!-- Wheel Properties -->
-  <xacro:property name="idler_wheel_mass"   
+  <xacro:property name="idler_wheel_mass"
     value="${props['geometry']['tracks']['front_idler_wheel']['mass']}" />
-  <xacro:property name="idler_wheel_radius" 
+  <xacro:property name="idler_wheel_radius"
     value="${props['geometry']['tracks']['front_idler_wheel']['radius']}" />
-  <xacro:property name="roller_wheel_mass" 
+  <xacro:property name="roller_wheel_mass"
     value="${props['geometry']['tracks']['roller_wheels']['mass']}" />
-  <xacro:property name="roller_wheel_radius" 
+  <xacro:property name="roller_wheel_radius"
     value="${props['geometry']['tracks']['roller_wheels']['radius']}" />
-  <xacro:property name="sprocket_wheel_mass" 
+  <xacro:property name="sprocket_wheel_mass"
     value="${props['geometry']['tracks']['sprocket_wheel']['mass']}" />
-  <xacro:property name="sprocket_wheel_radius" 
+  <xacro:property name="sprocket_wheel_radius"
     value="${props['geometry']['tracks']['sprocket_wheel']['radius']}" />
-  <xacro:property name="sprocket_wheel_x" 
+  <xacro:property name="sprocket_wheel_x"
     value="${props['geometry']['tracks']['sprocket_wheel']['x']}" />
-  <xacro:property name="sprocket_wheel_z" 
+  <xacro:property name="sprocket_wheel_z"
     value="${props['geometry']['tracks']['sprocket_wheel']['z']}" />
 
   <!-- Wheel Mounting Positions -->
   <xacro:property name="ground_clearance"
     value="${props['geometry']['ground_clearance']}" />
-  <xacro:property name="chassis_height" 
+  <xacro:property name="chassis_height"
     value="${props['geometry']['tracks']['front_idler_wheel']['radius']}" />
 
   <xacro:macro name="ceol" params="mode prefix">
-
-    <!-- visual chassis -->
     <xacro:chassis>
-      <!-- visual chassis -->
-      <!-- <visual> -->
-      <!--   <geometry> -->
-      <!--     <box size="${aabb_length} ${aabb_width} ${aabb_height}"/> -->
-      <!--   </geometry> -->
-      <!--   <origin xyz="${aabb_center_x-body_reference_x} ${aabb_center_y}  ${aabb_center_z-chassis_height}" rpy="0 0 0" /> -->
-      <!--   <material name="grey"> -->
-      <!--     &#60;&#33;&#45;&#45; <color rgba="0.6 0.6 0.6 1"/> &#45;&#45;&#62; -->
-      <!--     <color rgba="0.99 0.6 0.6 1"/> -->
-      <!--   </material> -->
-      <!-- </visual> -->
-      <visual>
-        <origin xyz="0 0 0" rpy="0 0 ${pi/2}" />
-        <geometry>
-          <!-- <box size="${aabb_length} ${aabb_width} ${aabb_height}"/> -->
-          <mesh filename="package://ceol_description/meshes/ceol_chassis.dae" />
-        </geometry>
-      </visual>
-
-      <!-- visual sprocker wheel -->
-      <cylinder length="${track_width}" radius="${sprocket_wheel_radius+track_thickness}"/>
-      <!-- <mesh filename="package://ceol_description/meshes/sprocket_wheel.dae" /> -->
-
-      <!-- visual visual idler wheel -->
-      <cylinder length="${track_width}" radius="${idler_wheel_radius+track_thickness}"/>
-      <!-- <mesh filename="package://ceol_description/meshes/idler_wheel.dae" /> -->
-
+      <xacro:chassis_visual />
+      <xacro:left_sprocket_wheel_visual />
+      <xacro:right_sprocket_wheel_visual />
+      <xacro:left_idler_wheel_visual />
+      <xacro:right_idler_wheel_visual />
     </xacro:chassis>
 
     <link name="${prefix}left_wheel_model">
@@ -146,7 +124,7 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 ${pi/2}" />
         <geometry>
-          <mesh filename="package://ceol_description/meshes/ceol_wheel.dae" scale="-1 1 1"/>
+          <mesh filename="package://ceol_description/meshes/ceol_wheel.dae" scale="-1 1 1" />
         </geometry>
       </visual>
     </link>
@@ -160,11 +138,14 @@
     <gazebo reference="${prefix}${base_link}">
       <material>
         <script>
-          <uri>package://alpo_description/meshes/ceol.material</uri>
+          <uri>package://ceol_description/meshes/ceol.material</uri>
           <name>ceol</name>
         </script>
       </material>
     </gazebo>
+
+    <!-- <xacro:include filename="$(find ceol_description)/urdf/three_hitch_point_ceol.urdf.xacro"
+    /> -->
 
   </xacro:macro>
 
