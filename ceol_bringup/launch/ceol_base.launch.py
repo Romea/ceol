@@ -52,10 +52,16 @@ def launch_setup(context, *args, **kwargs):
         get_package_share_directory("ceol_bringup") + "/config/controller_manager.yaml"
     )
 
-    base_controller_yaml_file = (
-        get_package_share_directory("ceol_bringup")
-        + "/config/mobile_base_controller_"+mode+".yaml"
-    )
+    if "live" in mode:
+        base_controller_yaml_file = (
+            get_package_share_directory("ceol_bringup")
+            + "/config/mobile_base_controller_live.yaml"
+        )
+    else:
+        base_controller_yaml_file = (
+            get_package_share_directory("ceol_bringup")
+            + "/config/mobile_base_controller_simulation.yaml"
+        )
 
     base_ros2_control_description_file = "/tmp/"+robot_prefix+base_name+"_ros2_control.urdf"
     with open(base_ros2_control_description_file, "r") as f:
