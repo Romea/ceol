@@ -2,7 +2,7 @@
 type: 2THD
 geometry:
   # tracks_distance: 1.137
-  tracks_distance: 0.91  # mesured on the INRAE robot
+  tracks_distance: 0.91 # mesured on the INRAE robot
   tracks:
     width: 0.18
     thickness: 0.03
@@ -13,12 +13,12 @@ geometry:
       z: 0.4
     front_idler_wheel:
       radius: 0.103
-      mass: 0.5
+      mass: 5
       x: 0.45
       z: 0.103
     rear_idler_wheel:
       radius: 0.103
-      mass: 0.5
+      mass: 5
       x: -0.42
       z: 0.103
     roller_wheels:
@@ -27,10 +27,10 @@ geometry:
       x: [-0.14, 0.14]
       z: 0.0675
   aabb:
-    length: 2.3490
+    length: 1.4
     width: 0.7000
-    height: 1.1330
-    center: [0., 0., 0.68]
+    height: 0.65
+    center: [0.35, 0., 0.4750]
   ground_clearance: 0.21
 
 tracks_speed_control:
@@ -46,10 +46,10 @@ inertia:
   center: [0., 0., 0.71650]
   z_moment: 239.
 
-control_point : [0.0, 0.0, 0.0]
+control_point: [0.0, 0.0, 0.0]
 
 joints:
-  base_footprint_joint_name : base_footprint
+  base_footprint_joint_name: base_footprint
   inertial_joint_name: inertial_joint
   left_sprocket_wheel_spinning_joint_name: left_sprocket_wheel_spinning_joint
   right_sprocket_wheel_spinning_joint_name: right_sprocket_wheel_spinning_joint
@@ -57,7 +57,7 @@ joints:
   front_right_idler_wheel_spinning_joint_name: front_left_idler_right_spinning_joint
   rear_left_idler_wheel_spinning_joint_name: rear_left_idler_wheel_spinning_joint
   rear_right_idler_wheel_spinning_joint_name: rear_left_idler_right_spinning_joint
-  
+
 links:
   base_link_name: base_link
   base_footprint_link_name: base_footprint
@@ -68,4 +68,3 @@ links:
   front_right_idler_wheel_spinning_link_name: front_left_idler_right_spinning_link
   rear_left_idler_wheel_spinning_link_name: rear_left_idler_wheel_spinning_link
   rear_right_idler_wheel_spinning_link_name: rear_left_idler_right_spinning_link
-
