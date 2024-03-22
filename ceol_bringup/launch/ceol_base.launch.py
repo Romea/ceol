@@ -23,8 +23,8 @@ from launch.actions import (
     OpaqueFunction,
     GroupAction,
 )
-from launch.conditions import LaunchConfigurationEquals, LaunchConfigurationNotEquals
-from launch.substitutions import PathJoinSubstitution, LaunchConfiguration
+from launch.conditions import IfCondition, LaunchConfigurationNotEquals
+from launch.substitutions import PathJoinSubstitution, LaunchConfiguration, PythonExpression
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node, SetParameter, PushRosNamespace
 from launch_ros.substitutions import FindPackageShare
@@ -34,6 +34,13 @@ from ament_index_python.packages import get_package_share_directory
 def launch_setup(context, *args, **kwargs):
 
     mode = LaunchConfiguration("mode").perform(context)
+
+    if "replay" in mode:
+        return []
+
+    if mode == "simulation":
+        mode += "_gazebo_classic"
+
     base_name = LaunchConfiguration("base_name").perform(context)
     robot_namespace = LaunchConfiguration("robot_namespace").perform(context)
 
@@ -68,7 +75,7 @@ def launch_setup(context, *args, **kwargs):
         base_ros2_control_description = f.read()
 
     controller_manager = Node(
-        condition=LaunchConfigurationEquals("mode", "live"),
+        condition=IfCondition(PythonExpression(["'gazebo' not in '", mode, "'"])),
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[
