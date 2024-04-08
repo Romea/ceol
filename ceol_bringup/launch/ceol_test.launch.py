@@ -15,6 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+import yaml
+
 from launch import LaunchDescription
 
 from launch.actions import (
@@ -151,6 +153,15 @@ def launch_setup(context, *args, **kwargs):
         )
     )
 
+    joy_params_path = '/tmp/joy_parameters.yaml'
+    joy_params = {
+        'dead_zone': 0.05,
+        'autorepeat_rate': 10.0,
+        'frame_id': 'joy',
+    }
+    with open(joy_params_path, 'w') as file:
+        file.write(yaml.safe_dump(joy_params))
+
     robot.append(
         GroupAction(
             actions=[
@@ -170,10 +181,9 @@ def launch_setup(context, *args, **kwargs):
                         ]
                     ),
                     launch_arguments={
-                        "device": joystick_device,
-                        "dead_zone": "0.05",
-                        "autorepeat_rate": "10.0",
-                        "frame_id": "joy",
+                        'executable': 'joy_node',
+                        'config_path': joy_params_path,
+                        'frame_id': joy_params['frame_id'],
                     }.items(),
                 )
             ]
