@@ -24,7 +24,7 @@
 
 // romea
 #include "romea_common_utils/qos.hpp"
-#include "romea_mobile_base_hardware/hardware_info.hpp"
+#include "romea_mobile_base_utils/ros2_control/info/hardware_info_common.hpp"
 
 // ros
 #include "rclcpp/rclcpp.hpp"
@@ -127,8 +127,10 @@ hardware_interface::return_type CeolHardware::load_info_(
 {
   std::cout << "load_info_ " << std::endl;
   try {
-    double sprocket_wheel_radius = get_parameter<double>(hardware_info, "sprocket_wheel_radius");
-    double track_thickness = get_parameter<double>(hardware_info, "track_thickness");
+    // double sprocket_wheel_radius = get_parameter<double>(hardware_info, "sprocket_wheel_radius");
+    // double track_thickness = get_parameter<double>(hardware_info, "track_thickness");
+    double sprocket_wheel_radius = get_sprocket_wheel_radius(hardware_info);
+    double track_thickness = get_track_thickness(hardware_info);
     virtual_sprocket_wheel_radius_ = sprocket_wheel_radius + track_thickness;
 
     return hardware_interface::return_type::OK;
@@ -192,7 +194,7 @@ hardware_interface::return_type CeolHardware::read(
 {
   // RCLCPP_INFO(rclcpp::get_logger("CeolHardware"), "Read data from robot");
 
-  rclcpp::spin_some(node_);
+  // rclcpp::spin_some(node_);
   set_hardware_state_();
 
   std::cout << "spocket wheels speeds " <<
@@ -225,7 +227,7 @@ hardware_interface::return_type CeolHardware::write(
 //-----------------------------------------------------------------------------
 void CeolHardware::get_hardware_command_()
 {
-  core::HardwareCommand2TD command = hardware_interface_->get_command();
+  core::HardwareCommand2TD command = hardware_interface_->get_hardware_command();
   left_sprocket_wheel_angular_speed_command_ = command.leftSprocketWheelSpinningSetPoint;
   right_sprocket_wheel_angular_speed_command_ = command.rightSprocketWheelSpinningSetPoint;
 }
@@ -238,7 +240,7 @@ void CeolHardware::set_hardware_state_()
   state.leftSprocketWheelSpinningMotion.torque = left_sprocket_wheel_torque_measure_;
   state.rightSprocketWheelSpinningMotion.velocity = right_sprocket_wheel_angular_speed_measure_;
   state.rightSprocketWheelSpinningMotion.torque = right_sprocket_wheel_torque_measure_;
-  hardware_interface_->set_state(state);
+  hardware_interface_->set_feedback(state);
 }
 
 
@@ -249,6 +251,16 @@ void CeolHardware::receive_data_()
     try {
       drivers::socketcan::CanId receive_id = can_receiver_.
         receive(received_frame_data_.data(), TIMEOUT);
+
+      static auto previous_time = std::chrono::system_clock::now();
+      static std::size_t count = 0;
+      auto current_time = std::chrono::system_clock::now();
+      count++;
+      if (std::chrono::duration_cast<std::chrono::seconds>(current_time - previous_time).count()) {
+        RCLCPP_INFO(node_->get_logger(), "CAN freq: %4lu Hz", count);
+        count = 0;
+        previous_time = current_time;
+      }
 
       switch (receive_id.identifier()) {
         case LEFT_SPROCKET_WHEEL_MEASUREMENTS_ID:
@@ -264,23 +276,29 @@ void CeolHardware::receive_data_()
           control_implement_actuator_position_(IMPLEMENT_LEFT_ACTUATOR_COMMAND_ID);
           break;
         case IMU_ACCELERATION_X_MEASUREMENT_ID:
+          // RCLCPP_INFO_STREAM(node_->get_logger(), "ax-axis");
           decode_imu_acceleration_(imu_acceleration_x_stamp_, imu_acceleration_x_measure_);
           break;
         case IMU_ACCELERATION_Y_MEASUREMENT_ID:
+          // RCLCPP_INFO_STREAM(node_->get_logger(), "ay-axis");
           decode_imu_acceleration_(imu_acceleration_y_stamp_, imu_acceleration_y_measure_);
           break;
         case IMU_ACCELERATION_Z_MEASUREMENT_ID:
+          // RCLCPP_INFO_STREAM(node_->get_logger(), "az-axis");
           decode_imu_acceleration_(imu_acceleration_z_stamp_, imu_acceleration_z_measure_);
           break;
         case IMU_ANGULAR_SPEED_X_MEASUREMENT_ID:
+          // RCLCPP_INFO_STREAM(node_->get_logger(), "sx-axis");
           decode_imu_angular_speed_(
             imu_angular_speed_x_stamp_, imu_angular_speed_x_measure_, imu_angle_x_measure_);
           break;
         case IMU_ANGULAR_SPEED_Y_MEASUREMENT_ID:
+          // RCLCPP_INFO_STREAM(node_->get_logger(), "sy-axis");
           decode_imu_angular_speed_(
             imu_angular_speed_y_stamp_, imu_angular_speed_y_measure_, imu_angle_y_measure_);
           break;
         case IMU_ANGULAR_SPEED_Z_MEASUREMENT_ID:
+          // RCLCPP_INFO_STREAM(node_->get_logger(), "sz-axis");
           decode_imu_angular_speed_(
             imu_angular_speed_z_stamp_, imu_angular_speed_z_measure_, imu_angle_z_measure_);
           break;
@@ -399,14 +417,16 @@ void CeolHardware::decode_imu_acceleration_(
   uint32_t & stamp,
   float & acceleration)
 {
-//   SG_ IMUAcc : 48|16@1- (1,0) [-32768|32767] "mm/s"  EMBEDDED_CONTROLLER
-//   SG_ IMUDV : 32|16@1- (1,0) [-32768|32767] "mm/s"  EMBEDDED_CONTROLLER
-//   SG_ IMUTimestamp : 0|32@1+ (1,0) [0|4294967295] "ms"  EMBEDDED_CONTROLLER
+  //   SG_ IMUAcc : 48|16@1- (1,0) [-32768|32767] "mm/s"  EMBEDDED_CONTROLLER
+  //   SG_ IMUDV : 32|16@1- (1,0) [-32768|32767] "mm/s"  EMBEDDED_CONTROLLER
+  //   SG_ IMUTimestamp : 0|32@1+ (1,0) [0|4294967295] "ms"  EMBEDDED_CONTROLLER
   stamp = ((received_frame_data_[3] & 0xFF) << 24) + ((received_frame_data_[2] & 0xFF) << 16) +
     ((received_frame_data_[1] & 0xFF) << 8) + received_frame_data_[0];
 
   acceleration = static_cast<float>(static_cast<int16_t>(
       (received_frame_data_[7] << 8) + received_frame_data_[6])) / 1000.;
+
+  // RCLCPP_INFO_STREAM(node_->get_logger(), "a " << " " << stamp);
 
   try_publish_imu_data_(stamp);
 }
@@ -428,6 +448,8 @@ void CeolHardware::decode_imu_angular_speed_(
 
   angle = static_cast<float>(static_cast<int16_t>(
       (received_frame_data_[5] << 8) + received_frame_data_[4])) / 10000.;
+
+  // RCLCPP_INFO_STREAM(node_->get_logger(), "w " << " " << stamp);
 
   try_publish_imu_data_(stamp);
 }
@@ -499,38 +521,51 @@ void CeolHardware::send_nmt_()
 //-----------------------------------------------------------------------------
 void CeolHardware::try_publish_imu_data_(const uint32_t & stamp)
 {
-  std::lock_guard<std::mutex> guard(imu_mutex_);
-  if (imu_acceleration_x_stamp_ == stamp &&
-    imu_acceleration_y_stamp_ == stamp &&
-    imu_acceleration_y_stamp_ == stamp &&
-    imu_angular_speed_x_stamp_ == stamp &&
-    imu_angular_speed_y_stamp_ == stamp &&
-    imu_angular_speed_z_stamp_ == stamp)
   {
-    sensor_msgs::msg::Imu msg;
-    double roll = imu_angle_x_measure_;
-    double pitch = imu_angle_y_measure_;
-    double yaw = imu_angle_z_measure_;
-    double cr = cos(roll * 0.5);
-    double sr = sin(roll * 0.5);
-    double cp = cos(pitch * 0.5);
-    double sp = sin(pitch * 0.5);
-    double cy = cos(yaw * 0.5);
-    double sy = sin(yaw * 0.5);
-    msg.header.stamp = node_->get_clock()->now();
-    msg.header.frame_id = imu_frame_id_;
-    msg.angular_velocity.x = imu_angular_speed_x_measure_;
-    msg.angular_velocity.y = imu_angular_speed_y_measure_;
-    msg.angular_velocity.z = imu_angular_speed_z_measure_;
-    msg.linear_acceleration.x = imu_acceleration_x_measure_;
-    msg.linear_acceleration.y = imu_acceleration_y_measure_;
-    msg.linear_acceleration.z = imu_acceleration_z_measure_;
-    msg.orientation.x = sr * cp * cy - cr * sp * sy;
-    msg.orientation.y = cr * sp * cy + sr * cp * sy;
-    msg.orientation.z = cr * cp * sy - sr * sp * cy;
-    msg.orientation.w = cr * cp * cy + sr * sp * sy;
-    imu_pub_->publish(msg);
+    std::lock_guard<std::mutex> guard(imu_mutex_);
+
+
+    // if (imu_acceleration_x_stamp_ == stamp &&
+    //   imu_acceleration_y_stamp_ == stamp &&
+    //   imu_acceleration_z_stamp_ == stamp &&
+    //   imu_angular_speed_x_stamp_ == stamp &&
+    //   imu_angular_speed_y_stamp_ == stamp &&
+    //   imu_angular_speed_z_stamp_ == stamp)
+    // {
+    if (
+      imu_acceleration_y_stamp_ == imu_acceleration_x_stamp_ &&
+      imu_acceleration_z_stamp_ == imu_acceleration_x_stamp_ &&
+      imu_angular_speed_y_stamp_ == imu_angular_speed_x_stamp_ &&
+      imu_angular_speed_z_stamp_ == imu_angular_speed_x_stamp_)
+    {
+      sensor_msgs::msg::Imu msg;
+      double roll = imu_angle_x_measure_;
+      double pitch = imu_angle_y_measure_;
+      double yaw = imu_angle_z_measure_;
+      double cr = cos(roll * 0.5);
+      double sr = sin(roll * 0.5);
+      double cp = cos(pitch * 0.5);
+      double sp = sin(pitch * 0.5);
+      double cy = cos(yaw * 0.5);
+      double sy = sin(yaw * 0.5);
+      msg.header.stamp = node_->get_clock()->now();
+      msg.header.frame_id = imu_frame_id_;
+      msg.angular_velocity.x = imu_angular_speed_x_measure_;
+      msg.angular_velocity.y = imu_angular_speed_y_measure_;
+      msg.angular_velocity.z = imu_angular_speed_z_measure_;
+      msg.linear_acceleration.x = imu_acceleration_x_measure_;
+      msg.linear_acceleration.y = imu_acceleration_y_measure_;
+      msg.linear_acceleration.z = imu_acceleration_z_measure_;
+      msg.orientation.x = sr * cp * cy - cr * sp * sy;
+      msg.orientation.y = cr * sp * cy + sr * cp * sy;
+      msg.orientation.z = cr * cp * sy - sr * sp * cy;
+      msg.orientation.w = cr * cp * cy + sr * sp * sy;
+
+      imu_pub_->publish(msg);
+    }
   }
+  rclcpp::spin_some(node_);
+  // }
 }
 
 
