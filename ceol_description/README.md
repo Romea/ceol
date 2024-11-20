@@ -1,20 +1,21 @@
-# 1 Overview #
+# ceol_description #
 
-This package contains the description of ceol robot
+## 1 Overview ##
 
-# 2 Package organization #
+This package contains the description of Ceol robot and scripts to display it
+
+## 2 Package organization ##
 
 This package is organized into subdirectories as follows:
 
-  - urdf/ contains (xacro representations of) urdf descriptions of ceol robot.
+  - urdf/ contains xacro representations of Ceol robot.
 
-  - config/ contains characteristic of each robot:
+  - ros2_control/ contains urdf configuration for ros2 controller
 
-    - chassis description
-    - kinematic
-    - odometry
-    - joints and links names
+  - config/ contains characteristics of the robot and teleop configuration 
 
-   - meshes/ constains meshes of chassis and wheels
+  - meshes/ contains meshes of chassis
 
-   - launch/ contains scripts to display robots and test joints
+  - launch/ contains scripts to display the robot and test joints
+
+  - python/ contains a Python module able to create robot urdf 
