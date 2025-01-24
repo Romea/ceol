@@ -31,8 +31,9 @@
 #include "sensor_msgs/msg/imu.hpp"
 
 // romea
-#include "ceol_msgs/msg/implement_position.hpp"
 #include "romea_common_utils/ros_versions.hpp"
+#include "romea_implement_msgs/msg/command.hpp"
+#include "romea_implement_msgs/msg/state.hpp"
 #include "romea_mobile_base_hardware/hardware_system_interface.hpp"
 
 namespace romea
@@ -44,7 +45,7 @@ class CeolHardware : public HardwareSystemInterface2THD
 {
 public:
   using ImuMsg = sensor_msgs::msg::Imu;
-  using ImplementPositionMsg = ceol_msgs::msg::ImplementPosition;
+  using ImplementCommandMsg = romea_implement_msgs::msg::Command;
 
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(CeolHardware);
@@ -165,11 +166,13 @@ private:
   float imu_angle_z_measure_;
   rclcpp::Publisher<ImuMsg>::SharedPtr imu_pub_;
 
-  std::atomic<uint16_t> desired_implement_position_;
+  std::atomic<float> desired_implement_position_;
+  float implement_anchor_high_{0.0};
+  float implement_anchor_low_{0.2};
   void start_implement_actuator_control_(uint32_t actuator_id);
   void control_implement_actuator_position_(uint32_t actuator_id);
-  void implement_position_callback_(ImplementPositionMsg::ConstSharedPtr msg);
-  rclcpp::Subscription<ImplementPositionMsg>::SharedPtr implement_position_sub_;
+  void implement_command_callback_(ImplementCommandMsg::ConstSharedPtr msg);
+  rclcpp::Subscription<ImplementCommandMsg>::SharedPtr implement_command_sub_;
 
 #ifndef NDEBUG
   std::fstream debug_file_;

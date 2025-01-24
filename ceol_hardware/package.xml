@@ -21,7 +21,7 @@
   <depend>romea_core_mobile_base</depend>
   <depend>romea_mobile_base_utils</depend>
   <depend>romea_mobile_base_hardware</depend>
-  <depend>ceol_msgs</depend>
+  <depend>romea_implement_msgs</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
 

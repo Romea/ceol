@@ -63,7 +63,6 @@ namespace romea
 namespace ros2
 {
 
-//-----------------------------------------------------------------------------
 CeolHardware::CeolHardware()
 : HardwareSystemInterface2THD("CeolHardware"),
   can_receiver_thread_(nullptr),
@@ -90,7 +89,6 @@ CeolHardware::CeolHardware()
 #endif
 }
 
-//-----------------------------------------------------------------------------
 CeolHardware::~CeolHardware()
 {
   // force deactive when interface has not been deactivated by controller manager but by ctrl-c
@@ -99,7 +97,6 @@ CeolHardware::~CeolHardware()
   }
 }
 
-//-----------------------------------------------------------------------------
 hardware_interface::return_type CeolHardware::connect_()
 {
   RCLCPP_INFO(rclcpp::get_logger("CeolHardware"), "Init communication with robot");
@@ -109,7 +106,6 @@ hardware_interface::return_type CeolHardware::connect_()
   return hardware_interface::return_type::OK;
 }
 
-//-----------------------------------------------------------------------------
 hardware_interface::return_type CeolHardware::disconnect_()
 {
   RCLCPP_INFO(rclcpp::get_logger("CeolHardware"), "Close communication with robot");
@@ -118,7 +114,7 @@ hardware_interface::return_type CeolHardware::disconnect_()
   stop_can_receiver_thread_();
   return hardware_interface::return_type::OK;
 }
-//-----------------------------------------------------------------------------
+
 hardware_interface::return_type CeolHardware::load_info_(
   const hardware_interface::HardwareInfo & hardware_info)
 {
@@ -137,7 +133,6 @@ hardware_interface::return_type CeolHardware::load_info_(
   }
 }
 
-//-----------------------------------------------------------------------------
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn CeolHardware::on_init(
   const hardware_interface::HardwareInfo & hardware_info)
 {
@@ -155,19 +150,23 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn CeolHa
     std::cout << " hardware node_name " << ns << std::endl;
     node_ = rclcpp::Node::make_shared("hardware", ns);
 
-    imu_frame_id_ = hardware_info.name + "_imu_link";
+    node_->declare_parameter("implement.anchor_high", implement_anchor_high_);
+    node_->declare_parameter("implement.anchor_low", implement_anchor_low_);
+    node_->get_parameter("implement.anchor_high", implement_anchor_high_);
+    node_->get_parameter("implement.anchor_low", implement_anchor_low_);
 
+    imu_frame_id_ = hardware_info.name + "_imu_link";
     imu_pub_ = node_->create_publisher<sensor_msgs::msg::Imu>(ns + "/imu/data", sensor_data_qos());
 
     auto callback =
-      std::bind(&CeolHardware::implement_position_callback_, this, std::placeholders::_1);
+      std::bind(&CeolHardware::implement_command_callback_, this, std::placeholders::_1);
 
-    implement_position_sub_ = node_->create_subscription<ImplementPositionMsg>(
-      ns + "/implement_position", best_effort(1), callback);
+    implement_command_sub_ = node_->create_subscription<ImplementCommandMsg>(
+      ns + "/implement_command", best_effort(1), callback);
 
     // RCLCPP_INFO_STREAM(
     //   rclcpp::get_logger("CeolHardware"),
-    //   implement_position_sub_->get_topic_name()
+    //   implement_command_sub_->get_topic_name()
     //     << " " << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
@@ -176,7 +175,6 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn CeolHa
   }
 }
 
-//-----------------------------------------------------------------------------
 #if ROS_DISTRO == ROS_GALACTIC
 hardware_interface::return_type CeolHardware::read()
 #else
@@ -195,7 +193,6 @@ hardware_interface::return_type CeolHardware::read(
   return hardware_interface::return_type::OK;
 }
 
-//-----------------------------------------------------------------------------
 #if ROS_DISTRO == ROS_GALACTIC
 hardware_interface::return_type CeolHardware::write()
 #else
@@ -214,7 +211,6 @@ hardware_interface::return_type CeolHardware::write(
   return hardware_interface::return_type::OK;
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::get_hardware_command_()
 {
   core::HardwareCommand2TD command = hardware_interface_->get_hardware_command();
@@ -222,7 +218,6 @@ void CeolHardware::get_hardware_command_()
   right_sprocket_wheel_angular_speed_command_ = command.rightSprocketWheelSpinningSetPoint;
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::set_hardware_state_()
 {
   core::HardwareState2TD state;
@@ -233,7 +228,6 @@ void CeolHardware::set_hardware_state_()
   hardware_interface_->set_feedback(state);
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::receive_data_()
 {
   while (rclcpp::ok() && can_receiver_thread_run_) {
@@ -303,20 +297,17 @@ void CeolHardware::receive_data_()
   }
 }
 
-//-----------------------------------------------------------------------------
 bool CeolHardware::send_command_()
 {
   return send_command_(
     left_sprocket_wheel_angular_speed_command_, right_sprocket_wheel_angular_speed_command_);
 }
 
-//-----------------------------------------------------------------------------
 bool CeolHardware::send_null_command_()
 {
   return send_command_(0., 0.);
 }
 
-//-----------------------------------------------------------------------------
 bool CeolHardware::send_command_(
   const float & left_sprocket_angular_speed_command,
   const float & right_sprocket_angular_speed_command)
@@ -337,7 +328,6 @@ bool CeolHardware::send_command_(
   return send_data_(657, 4);
 }
 
-//-----------------------------------------------------------------------------
 bool CeolHardware::send_data_(uint32_t id, uint32_t length, bool extended)
 {
   try {
@@ -379,7 +369,6 @@ void CeolHardware::decode_left_track_measurements_()
     25 / 1000;
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::decode_right_track_measurements_()
 {
   //  BO_ 391 InverterRightDrivingStatus: 8 INVERTER_RIGHT
@@ -398,7 +387,6 @@ void CeolHardware::decode_right_track_measurements_()
     25 / 1000;
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::decode_imu_acceleration_(uint32_t & stamp, float & acceleration)
 {
   //   SG_ IMUAcc : 48|16@1- (1,0) [-32768|32767] "mm/s"  EMBEDDED_CONTROLLER
@@ -416,7 +404,6 @@ void CeolHardware::decode_imu_acceleration_(uint32_t & stamp, float & accelerati
   try_publish_imu_data_(stamp);
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::decode_imu_angular_speed_(uint32_t & stamp, float & angular_speed, float & angle)
 {
   //  SG_ IMURot : 48|16@1- (0.0001,0) [-3.2768|3.2767] "rad/s"  EMBEDDED_CONTROLLER
@@ -438,7 +425,6 @@ void CeolHardware::decode_imu_angular_speed_(uint32_t & stamp, float & angular_s
   try_publish_imu_data_(stamp);
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::ens_control_callback_()
 {
   //  BO_ 529 ENSControl: 1
@@ -467,7 +453,6 @@ void CeolHardware::ens_control_callback_()
   }
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::send_activate_auto_mode_()
 {
   using namespace std::chrono_literals;
@@ -483,7 +468,6 @@ void CeolHardware::send_activate_auto_mode_()
   std::this_thread::sleep_for(500ms);
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::send_deactivate_auto_mode_()
 {
   send_null_command_();
@@ -493,7 +477,6 @@ void CeolHardware::send_deactivate_auto_mode_()
   send_data_(401, 3);
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::send_nmt_()
 {
   sended_frame_data_[0] = 1;
@@ -501,7 +484,6 @@ void CeolHardware::send_nmt_()
   send_data_(0, 2);
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::try_publish_imu_data_(const uint32_t & /* stamp */)
 {
   {
@@ -549,24 +531,15 @@ void CeolHardware::try_publish_imu_data_(const uint32_t & /* stamp */)
   // }
 }
 
-//-----------------------------------------------------------------------------
-void CeolHardware::implement_position_callback_(ImplementPositionMsg::ConstSharedPtr msg)
+void CeolHardware::implement_command_callback_(ImplementCommandMsg::ConstSharedPtr msg)
 {
-  double percentage = std::min(msg->position, IMPLEMENT_POSITION_MSG_MAXIMAL_VALUE) / 10000.;
-
-  uint16_t desired_implement_position = static_cast<uint16_t>(
-    percentage * IMPLEMENT_HIGHEST_ACTUATORS_POSITION_ +
-    (1 - percentage) * IMPLEMENT_LOWEST_ACTUATORS_POSITION_);
-
-  if (desired_implement_position != desired_implement_position_.load() && caius_auto_) {
-    start_implement_actuator_control_(IMPLEMENT_LEFT_ACTUATOR_COMMAND_ID);
-    start_implement_actuator_control_(IMPLEMENT_RIGHT_ACTUATOR_COMMAND_ID);
+  if (msg->command == ImplementCommandMsg::GO_TO_ANCHOR_HIGH) {
+    desired_implement_position_.store(implement_anchor_high_);
+  } else if (msg->command == ImplementCommandMsg::GO_TO_ANCHOR_LOW) {
+    desired_implement_position_.store(implement_anchor_low_);
   }
-
-  desired_implement_position_.store(desired_implement_position);
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::start_implement_actuator_control_(uint32_t actuator_id)
 {
   sended_frame_data_[0] = 0x00;
@@ -580,7 +553,6 @@ void CeolHardware::start_implement_actuator_control_(uint32_t actuator_id)
   send_data_(actuator_id, 8, true);
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::control_implement_actuator_position_(uint32_t actuator_id)
 {
   //  BO_ 2565850753 ActuatorLeft_Cmd: 8 ACTUATOR_LEFT
@@ -592,7 +564,7 @@ void CeolHardware::control_implement_actuator_position_(uint32_t actuator_id)
   uint16_t actuator_position_measure =
     static_cast<uint16_t>(((received_frame_data_[1] << 8) + received_frame_data_[0]));
 
-  auto desired_implement_position = desired_implement_position_.load();
+  uint16_t desired_implement_position = desired_implement_position_.load() * 1000;
 
   if (std::isfinite(desired_implement_position) && caius_auto_) {
     if (std::abs(desired_implement_position - actuator_position_measure) > 10) {
@@ -609,14 +581,12 @@ void CeolHardware::control_implement_actuator_position_(uint32_t actuator_id)
   }
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::start_can_receiver_thread_()
 {
   can_receiver_thread_run_ = true;
   can_receiver_thread_ = std::make_unique<std::thread>(&CeolHardware::receive_data_, this);
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::stop_can_receiver_thread_()
 {
   can_receiver_thread_run_ = false;
@@ -626,24 +596,27 @@ void CeolHardware::stop_can_receiver_thread_()
 }
 
 #ifndef NDEBUG
-//-----------------------------------------------------------------------------
+
 void CeolHardware::open_log_file_()
 {
   debug_file_.open(
     std::string("ceol.dat").c_str(), std::fstream::in | std::fstream::out | std::fstream::trunc);
 }
-//-----------------------------------------------------------------------------
+
 void CeolHardware::write_log_header_()
 {
   if (debug_file_.is_open()) {
     debug_file_ << " time, ";
-    debug_file_ << " LS, " << " RS, ";
-    debug_file_ << " LT, " << " RT, ";
-    debug_file_ << " LS_cmd, " << " RS_cmd " << "\n";
+    debug_file_ << " LS, "
+                << " RS, ";
+    debug_file_ << " LT, "
+                << " RT, ";
+    debug_file_ << " LS_cmd, "
+                << " RS_cmd "
+                << "\n";
   }
 }
 
-//-----------------------------------------------------------------------------
 void CeolHardware::write_log_data_()
 {
   if (debug_file_.is_open()) {
