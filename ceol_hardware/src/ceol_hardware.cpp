@@ -14,13 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 // std
 #include <algorithm>
-#include <memory>
-#include <thread>
-#include <string>
 #include <fstream>
+#include <memory>
+#include <string>
+#include <thread>
 
 // romea
 #include "romea_common_utils/qos.hpp"
@@ -29,9 +28,7 @@
 // ros
 #include "rclcpp/rclcpp.hpp"
 
-
 // ceol
-#include "ceol_msgs/msg/implement_position.hpp"
 #include "ceol_hardware/ceol_hardware.hpp"
 
 namespace
@@ -57,7 +54,7 @@ const uint16_t IMPLEMENT_LOWEST_ACTUATORS_POSITION_ = 1050;
 const uint16_t IMPLEMENT_HIGHEST_ACTUATORS_POSITION_ = 1;
 const uint16_t IMPLEMENT_POSITION_MSG_MAXIMAL_VALUE = 10000;
 
-const std::chrono::milliseconds TIMEOUT(5);
+const std::chrono::milliseconds TIMEOUT(200);
 
 }  // namespace
 
@@ -141,19 +138,18 @@ hardware_interface::return_type CeolHardware::load_info_(
 }
 
 //-----------------------------------------------------------------------------
-rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-CeolHardware::on_init(const hardware_interface::HardwareInfo & hardware_info)
+rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn CeolHardware::on_init(
+  const hardware_interface::HardwareInfo & hardware_info)
 {
-  if (hardware_interface::SystemInterface::on_init(hardware_info) !=
-    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS)
-  {
+  if (
+    hardware_interface::SystemInterface::on_init(hardware_info) !=
+    rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS) {
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::ERROR;
   }
 
-
-  if (this->load_info_(hardware_info) == hardware_interface::return_type::OK &&
-    this->load_interface_(hardware_info) == hardware_interface::return_type::OK)
-  {
+  if (
+    this->load_info_(hardware_info) == hardware_interface::return_type::OK &&
+    this->load_interface_(hardware_info) == hardware_interface::return_type::OK) {
     std::string ns = "_" + hardware_info.name;
     std::replace(ns.begin(), ns.end(), '_', '/');
     std::cout << " hardware node_name " << ns << std::endl;
@@ -161,20 +157,18 @@ CeolHardware::on_init(const hardware_interface::HardwareInfo & hardware_info)
 
     imu_frame_id_ = hardware_info.name + "_imu_link";
 
-    imu_pub_ = node_->create_publisher<sensor_msgs::msg::Imu>(
-      ns + "/imu/data", sensor_data_qos());
+    imu_pub_ = node_->create_publisher<sensor_msgs::msg::Imu>(ns + "/imu/data", sensor_data_qos());
 
-    auto callback = std::bind(
-      &CeolHardware::implement_position_callback_, this, std::placeholders::_1);
+    auto callback =
+      std::bind(&CeolHardware::implement_position_callback_, this, std::placeholders::_1);
 
     implement_position_sub_ = node_->create_subscription<ImplementPositionMsg>(
       ns + "/implement_position", best_effort(1), callback);
 
-
-    RCLCPP_INFO_STREAM(
-      rclcpp::get_logger("CeolHardware"),
-      implement_position_sub_->get_topic_name() << " " <<
-        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    // RCLCPP_INFO_STREAM(
+    //   rclcpp::get_logger("CeolHardware"),
+    //   implement_position_sub_->get_topic_name()
+    //     << " " << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
   } else {
@@ -182,14 +176,12 @@ CeolHardware::on_init(const hardware_interface::HardwareInfo & hardware_info)
   }
 }
 
-
 //-----------------------------------------------------------------------------
 #if ROS_DISTRO == ROS_GALACTIC
 hardware_interface::return_type CeolHardware::read()
 #else
 hardware_interface::return_type CeolHardware::read(
-  const rclcpp::Time & /*time*/,
-  const rclcpp::Duration & /*period*/)
+  const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 #endif
 {
   // RCLCPP_INFO(rclcpp::get_logger("CeolHardware"), "Read data from robot");
@@ -197,9 +189,8 @@ hardware_interface::return_type CeolHardware::read(
   // rclcpp::spin_some(node_);
   set_hardware_state_();
 
-  std::cout << "spocket wheels speeds " <<
-    left_sprocket_wheel_angular_speed_measure_.load() << " " <<
-    right_sprocket_wheel_angular_speed_measure_.load() << std::endl;
+  std::cout << "spocket wheels speeds " << left_sprocket_wheel_angular_speed_measure_.load() << " "
+            << right_sprocket_wheel_angular_speed_measure_.load() << std::endl;
 
   return hardware_interface::return_type::OK;
 }
@@ -209,8 +200,7 @@ hardware_interface::return_type CeolHardware::read(
 hardware_interface::return_type CeolHardware::write()
 #else
 hardware_interface::return_type CeolHardware::write(
-  const rclcpp::Time & /*time*/,
-  const rclcpp::Duration & /*period*/)
+  const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 #endif
 {
   // RCLCPP_INFO(rclcpp::get_logger("CeolHardware"), "Send command to robot");
@@ -243,21 +233,20 @@ void CeolHardware::set_hardware_state_()
   hardware_interface_->set_feedback(state);
 }
 
-
 //-----------------------------------------------------------------------------
 void CeolHardware::receive_data_()
 {
   while (rclcpp::ok() && can_receiver_thread_run_) {
     try {
-      drivers::socketcan::CanId receive_id = can_receiver_.
-        receive(received_frame_data_.data(), TIMEOUT);
+      drivers::socketcan::CanId receive_id =
+        can_receiver_.receive(received_frame_data_.data(), TIMEOUT);
 
       static auto previous_time = std::chrono::system_clock::now();
       static std::size_t count = 0;
       auto current_time = std::chrono::system_clock::now();
       count++;
       if (std::chrono::duration_cast<std::chrono::seconds>(current_time - previous_time).count()) {
-        RCLCPP_INFO(node_->get_logger(), "CAN freq: %4lu Hz", count);
+        //RCLCPP_INFO(node_->get_logger(), "CAN freq: %4lu Hz", count);
         count = 0;
         previous_time = current_time;
       }
@@ -318,9 +307,7 @@ void CeolHardware::receive_data_()
 bool CeolHardware::send_command_()
 {
   return send_command_(
-    left_sprocket_wheel_angular_speed_command_,
-    right_sprocket_wheel_angular_speed_command_);
-
+    left_sprocket_wheel_angular_speed_command_, right_sprocket_wheel_angular_speed_command_);
 }
 
 //-----------------------------------------------------------------------------
@@ -350,7 +337,6 @@ bool CeolHardware::send_command_(
   return send_data_(657, 4);
 }
 
-
 //-----------------------------------------------------------------------------
 bool CeolHardware::send_data_(uint32_t id, uint32_t length, bool extended)
 {
@@ -360,71 +346,70 @@ bool CeolHardware::send_data_(uint32_t id, uint32_t length, bool extended)
       can_sender_.send(sended_frame_data_.data(), length, can_id.extended(), TIMEOUT);
     } else {
       can_sender_.send(sended_frame_data_.data(), length, can_id, TIMEOUT);
-
     }
     return true;
   } catch (drivers::socketcan::SocketCanTimeout & e) {
     RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("CeolHardware"),
-      "Send can data" << std::hex << id << " : timeout");
+      rclcpp::get_logger("CeolHardware"), "Send can data" << std::hex << id << " : timeout");
   } catch (std::runtime_error & e) {
     RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("CeolHardware"),
-      "Send can data" << std::hex << id << " : " << e.what());
+      rclcpp::get_logger("CeolHardware"), "Send can data" << std::hex << id << " : " << e.what());
   }
-  RCLCPP_ERROR_STREAM(
-    rclcpp::get_logger("CeolHardware"),
-    "Send data failed");
+  RCLCPP_ERROR_STREAM(rclcpp::get_logger("CeolHardware"), "Send data failed");
 
   return false;
 }
 
-
 //----------------------------------------------------------------------------
 void CeolHardware::decode_left_track_measurements_()
 {
-//  BO_ 390 InverterLeftDrivingStatus: 8 INVERTER_LEFT
-//  SG_ InverterLeftStatusWord : 0|16@1+ (1,0) [0|65535] ""  EMBEDDED_CONTROLLER
-//  SG_ InverterLeftVelocityRPM : 16|32@1- (1,0) [-2147483648|2147483647] "RPM"  EMBEDDED_CONTROLLER // NOLINT
-//  SG_ InverterLeftTorque : 48|16@1- (0.1,0) [-32768|32767] "% of peak"  EMBEDDED_CONTROLLER  // % of peak = 25Nm  // NOLINT
-  left_sprocket_wheel_angular_speed_measure_ = -static_cast<float>(static_cast<int32_t>(
+  //  BO_ 390 InverterLeftDrivingStatus: 8 INVERTER_LEFT
+  //  SG_ InverterLeftStatusWord : 0|16@1+ (1,0) [0|65535] ""  EMBEDDED_CONTROLLER
+  //  SG_ InverterLeftVelocityRPM : 16|32@1- (1,0) [-2147483648|2147483647] "RPM"  EMBEDDED_CONTROLLER // NOLINT
+  //  SG_ InverterLeftTorque : 48|16@1- (0.1,0) [-32768|32767] "% of peak"  EMBEDDED_CONTROLLER  // % of peak = 25Nm  // NOLINT
+  left_sprocket_wheel_angular_speed_measure_ =
+    -static_cast<float>(static_cast<int32_t>(
       (received_frame_data_[5] << 24) + (received_frame_data_[4] << 16) +
-      (received_frame_data_[3] <<
-        8) + received_frame_data_[2])) / 2736.61 / virtual_sprocket_wheel_radius_;
+      (received_frame_data_[3] << 8) + received_frame_data_[2])) /
+    2736.61 / virtual_sprocket_wheel_radius_;
 
-  left_sprocket_wheel_torque_measure_ = -static_cast<float>(static_cast<int16_t>(
-      (received_frame_data_[7] << 8) + received_frame_data_[6])) * 25 / 1000;
+  left_sprocket_wheel_torque_measure_ =
+    -static_cast<float>(
+      static_cast<int16_t>((received_frame_data_[7] << 8) + received_frame_data_[6])) *
+    25 / 1000;
 }
 
 //-----------------------------------------------------------------------------
 void CeolHardware::decode_right_track_measurements_()
 {
-//  BO_ 391 InverterRightDrivingStatus: 8 INVERTER_RIGHT
-//  SG_ InverterRightTorque : 48|16@1- (0.1,0) [-32768|32767] "% of peak"  EMBEDDED_CONTROLLER // % of peak = 25Nm // NOLINT
-//  SG_ InverterRightVelocityRPM : 16|32@1- (1,0) [-2147483648|2147483647] "RPM"  EMBEDDED_CONTROLLER // NOLINT
-//  SG_ InverterRightStatusWord : 0|16@1+ (1,0) [0|65535] ""  EMBEDDED_CONTROLLER
-  right_sprocket_wheel_angular_speed_measure_ = static_cast<float>(static_cast<int32_t>(
+  //  BO_ 391 InverterRightDrivingStatus: 8 INVERTER_RIGHT
+  //  SG_ InverterRightTorque : 48|16@1- (0.1,0) [-32768|32767] "% of peak"  EMBEDDED_CONTROLLER // % of peak = 25Nm // NOLINT
+  //  SG_ InverterRightVelocityRPM : 16|32@1- (1,0) [-2147483648|2147483647] "RPM"  EMBEDDED_CONTROLLER // NOLINT
+  //  SG_ InverterRightStatusWord : 0|16@1+ (1,0) [0|65535] ""  EMBEDDED_CONTROLLER
+  right_sprocket_wheel_angular_speed_measure_ =
+    static_cast<float>(static_cast<int32_t>(
       (received_frame_data_[5] << 24) + (received_frame_data_[4] << 16) +
-      (received_frame_data_[3] <<
-        8) + received_frame_data_[2])) / 2736.61 / virtual_sprocket_wheel_radius_;
+      (received_frame_data_[3] << 8) + received_frame_data_[2])) /
+    2736.61 / virtual_sprocket_wheel_radius_;
 
-  right_sprocket_wheel_torque_measure_ = static_cast<float>(static_cast<int16_t>(
-      (received_frame_data_[7] << 8) + received_frame_data_[6])) * 25 / 1000;
+  right_sprocket_wheel_torque_measure_ =
+    static_cast<float>(
+      static_cast<int16_t>((received_frame_data_[7] << 8) + received_frame_data_[6])) *
+    25 / 1000;
 }
 
 //-----------------------------------------------------------------------------
-void CeolHardware::decode_imu_acceleration_(
-  uint32_t & stamp,
-  float & acceleration)
+void CeolHardware::decode_imu_acceleration_(uint32_t & stamp, float & acceleration)
 {
   //   SG_ IMUAcc : 48|16@1- (1,0) [-32768|32767] "mm/s"  EMBEDDED_CONTROLLER
   //   SG_ IMUDV : 32|16@1- (1,0) [-32768|32767] "mm/s"  EMBEDDED_CONTROLLER
   //   SG_ IMUTimestamp : 0|32@1+ (1,0) [0|4294967295] "ms"  EMBEDDED_CONTROLLER
   stamp = ((received_frame_data_[3] & 0xFF) << 24) + ((received_frame_data_[2] & 0xFF) << 16) +
-    ((received_frame_data_[1] & 0xFF) << 8) + received_frame_data_[0];
+          ((received_frame_data_[1] & 0xFF) << 8) + received_frame_data_[0];
 
-  acceleration = static_cast<float>(static_cast<int16_t>(
-      (received_frame_data_[7] << 8) + received_frame_data_[6])) / 1000.;
+  acceleration = static_cast<float>(
+                   static_cast<int16_t>((received_frame_data_[7] << 8) + received_frame_data_[6])) /
+                 1000.;
 
   // RCLCPP_INFO_STREAM(node_->get_logger(), "a " << " " << stamp);
 
@@ -432,22 +417,21 @@ void CeolHardware::decode_imu_acceleration_(
 }
 
 //-----------------------------------------------------------------------------
-void CeolHardware::decode_imu_angular_speed_(
-  uint32_t & stamp,
-  float & angular_speed,
-  float & angle)
+void CeolHardware::decode_imu_angular_speed_(uint32_t & stamp, float & angular_speed, float & angle)
 {
-//  SG_ IMURot : 48|16@1- (0.0001,0) [-3.2768|3.2767] "rad/s"  EMBEDDED_CONTROLLER
-//   SG_ IMUAngle: 32|16@1- (0.0001,0) [-3.2768|3.2767] "radian"  EMBEDDED_CONTROLLER
-//   SG_ IMUTimestamp : 0|32@1+ (1,0) [0|4294967295] "ms"  EMBEDDED_CONTROLLER
+  //  SG_ IMURot : 48|16@1- (0.0001,0) [-3.2768|3.2767] "rad/s"  EMBEDDED_CONTROLLER
+  //   SG_ IMUAngle: 32|16@1- (0.0001,0) [-3.2768|3.2767] "radian"  EMBEDDED_CONTROLLER
+  //   SG_ IMUTimestamp : 0|32@1+ (1,0) [0|4294967295] "ms"  EMBEDDED_CONTROLLER
   stamp = ((received_frame_data_[3] & 0xFF) << 24) + ((received_frame_data_[2] & 0xFF) << 16) +
-    ((received_frame_data_[1] & 0xFF) << 8) + received_frame_data_[0];
+          ((received_frame_data_[1] & 0xFF) << 8) + received_frame_data_[0];
 
   angular_speed = static_cast<float>(static_cast<int16_t>(
-      (received_frame_data_[7] << 8) + received_frame_data_[6])) / 10000.;
+                    (received_frame_data_[7] << 8) + received_frame_data_[6])) /
+                  10000.;
 
-  angle = static_cast<float>(static_cast<int16_t>(
-      (received_frame_data_[5] << 8) + received_frame_data_[4])) / 10000.;
+  angle = static_cast<float>(
+            static_cast<int16_t>((received_frame_data_[5] << 8) + received_frame_data_[4])) /
+          10000.;
 
   // RCLCPP_INFO_STREAM(node_->get_logger(), "w " << " " << stamp);
 
@@ -517,13 +501,11 @@ void CeolHardware::send_nmt_()
   send_data_(0, 2);
 }
 
-
 //-----------------------------------------------------------------------------
-void CeolHardware::try_publish_imu_data_(const uint32_t & stamp)
+void CeolHardware::try_publish_imu_data_(const uint32_t & /* stamp */)
 {
   {
     std::lock_guard<std::mutex> guard(imu_mutex_);
-
 
     // if (imu_acceleration_x_stamp_ == stamp &&
     //   imu_acceleration_y_stamp_ == stamp &&
@@ -536,8 +518,7 @@ void CeolHardware::try_publish_imu_data_(const uint32_t & stamp)
       imu_acceleration_y_stamp_ == imu_acceleration_x_stamp_ &&
       imu_acceleration_z_stamp_ == imu_acceleration_x_stamp_ &&
       imu_angular_speed_y_stamp_ == imu_angular_speed_x_stamp_ &&
-      imu_angular_speed_z_stamp_ == imu_angular_speed_x_stamp_)
-    {
+      imu_angular_speed_z_stamp_ == imu_angular_speed_x_stamp_) {
       sensor_msgs::msg::Imu msg;
       double roll = imu_angle_x_measure_;
       double pitch = imu_angle_y_measure_;
@@ -567,7 +548,6 @@ void CeolHardware::try_publish_imu_data_(const uint32_t & stamp)
   rclcpp::spin_some(node_);
   // }
 }
-
 
 //-----------------------------------------------------------------------------
 void CeolHardware::implement_position_callback_(ImplementPositionMsg::ConstSharedPtr msg)
@@ -600,18 +580,17 @@ void CeolHardware::start_implement_actuator_control_(uint32_t actuator_id)
   send_data_(actuator_id, 8, true);
 }
 
-
 //-----------------------------------------------------------------------------
 void CeolHardware::control_implement_actuator_position_(uint32_t actuator_id)
 {
-//  BO_ 2565850753 ActuatorLeft_Cmd: 8 ACTUATOR_LEFT
-//  SG_ Cmd_ActuatorLeft_Position : 0|16@1+ (0.1,0) [0|65535] "mm per bit" Vector__XXX
-//  SG_ Cmd_ActuatorLeft_MaxCurrent : 16|8@1+ (0.25,0) [0|255] "250mA per bit" Vector__XXX
-//  SG_ Cmd_ActuatorLeft_Speed : 24|8@1+ (0.5,0) [0|255] "0.5 percent per bit" Vector__XXX
-//  SG_ Cmd_ActuatorLeft_StartRamp : 32|8@1+ (0.05,0) [0|255] "50ms per bit" Vector__XXX
-//  SG_ Cmd_ActuatorLeft_EndRamp : 40|8@1+ (0.05,0) [0|255] "50ms per bit" Vector__XXX
-  uint16_t actuator_position_measure = static_cast<uint16_t>(
-    ((received_frame_data_[1] << 8) + received_frame_data_[0]));
+  //  BO_ 2565850753 ActuatorLeft_Cmd: 8 ACTUATOR_LEFT
+  //  SG_ Cmd_ActuatorLeft_Position : 0|16@1+ (0.1,0) [0|65535] "mm per bit" Vector__XXX
+  //  SG_ Cmd_ActuatorLeft_MaxCurrent : 16|8@1+ (0.25,0) [0|255] "250mA per bit" Vector__XXX
+  //  SG_ Cmd_ActuatorLeft_Speed : 24|8@1+ (0.5,0) [0|255] "0.5 percent per bit" Vector__XXX
+  //  SG_ Cmd_ActuatorLeft_StartRamp : 32|8@1+ (0.05,0) [0|255] "50ms per bit" Vector__XXX
+  //  SG_ Cmd_ActuatorLeft_EndRamp : 40|8@1+ (0.05,0) [0|255] "50ms per bit" Vector__XXX
+  uint16_t actuator_position_measure =
+    static_cast<uint16_t>(((received_frame_data_[1] << 8) + received_frame_data_[0]));
 
   auto desired_implement_position = desired_implement_position_.load();
 
@@ -630,7 +609,6 @@ void CeolHardware::control_implement_actuator_position_(uint32_t actuator_id)
   }
 }
 
-
 //-----------------------------------------------------------------------------
 void CeolHardware::start_can_receiver_thread_()
 {
@@ -647,14 +625,12 @@ void CeolHardware::stop_can_receiver_thread_()
   }
 }
 
-
 #ifndef NDEBUG
 //-----------------------------------------------------------------------------
 void CeolHardware::open_log_file_()
 {
   debug_file_.open(
-    std::string("ceol.dat").c_str(),
-    std::fstream::in | std::fstream::out | std::fstream::trunc);
+    std::string("ceol.dat").c_str(), std::fstream::in | std::fstream::out | std::fstream::trunc);
 }
 //-----------------------------------------------------------------------------
 void CeolHardware::write_log_header_()

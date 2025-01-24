@@ -20,21 +20,20 @@
 // std
 #include <array>
 #include <atomic>
+#include <fstream>
 #include <memory>
 #include <thread>
-#include <fstream>
-
 
 // ros
+#include "rclcpp/macros.hpp"
 #include "ros2_socketcan/socket_can_receiver.hpp"
 #include "ros2_socketcan/socket_can_sender.hpp"
 #include "sensor_msgs/msg/imu.hpp"
-#include "rclcpp/macros.hpp"
 
 // romea
+#include "ceol_msgs/msg/implement_position.hpp"
 #include "romea_common_utils/ros_versions.hpp"
 #include "romea_mobile_base_hardware/hardware_system_interface.hpp"
-
 
 namespace romea
 {
@@ -54,18 +53,16 @@ public:
 
   virtual ~CeolHardware();
 
-  #if ROS_DISTRO == ROS_GALACTIC
-  hardware_interface::return_type read()override;
+#if ROS_DISTRO == ROS_GALACTIC
+  hardware_interface::return_type read() override;
 
-  hardware_interface::return_type write()override;
+  hardware_interface::return_type write() override;
 #else
   hardware_interface::return_type read(
-    const rclcpp::Time & time,
-    const rclcpp::Duration & period)override;
+    const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
   hardware_interface::return_type write(
-    const rclcpp::Time & time,
-    const rclcpp::Duration & period)override;
+    const rclcpp::Time & time, const rclcpp::Duration & period) override;
 #endif
 
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn on_init(
@@ -79,13 +76,11 @@ private:
   hardware_interface::return_type load_info_(
     const hardware_interface::HardwareInfo & hardware_info) override;
 
-
   bool send_data_(uint32_t id, uint32_t length, bool extended = false);
 
   bool send_command_(
     const float & left_sprocket_angular_speed_command,
-    const float & right_sprocket_angular_speed_command
-  );
+    const float & right_sprocket_angular_speed_command);
 
   bool send_null_command_();
 
@@ -97,29 +92,21 @@ private:
 
   void send_nmt_();
 
-
   void receive_data_();
 
   void decode_left_track_measurements_();
 
   void decode_right_track_measurements_();
 
-  void decode_imu_acceleration_(
-    uint32_t & stamp,
-    float & acceleration);
+  void decode_imu_acceleration_(uint32_t & stamp, float & acceleration);
 
-  void decode_imu_angular_speed_(
-    uint32_t & stamp,
-    float & angular_speed,
-    float & angle);
+  void decode_imu_angular_speed_(uint32_t & stamp, float & angular_speed, float & angle);
 
   void ens_control_callback_();
-
 
   void try_publish_imu_data_(const uint32_t & stamp);
 
   // bool is_drive_enable_() const;
-
 
   void start_can_receiver_thread_();
 
@@ -183,7 +170,6 @@ private:
   void control_implement_actuator_position_(uint32_t actuator_id);
   void implement_position_callback_(ImplementPositionMsg::ConstSharedPtr msg);
   rclcpp::Subscription<ImplementPositionMsg>::SharedPtr implement_position_sub_;
-
 
 #ifndef NDEBUG
   std::fstream debug_file_;
