@@ -533,6 +533,10 @@ void CeolHardware::try_publish_imu_data_(const uint32_t & /* stamp */)
 
 void CeolHardware::implement_command_callback_(ImplementCommandMsg::ConstSharedPtr msg)
 {
+  if (caius_auto_) {
+    start_implement_actuator_control_(IMPLEMENT_LEFT_ACTUATOR_COMMAND_ID);
+    start_implement_actuator_control_(IMPLEMENT_RIGHT_ACTUATOR_COMMAND_ID);
+  }
   if (msg->command == ImplementCommandMsg::GO_TO_ANCHOR_HIGH) {
     desired_implement_position_.store(implement_anchor_high_);
   } else if (msg->command == ImplementCommandMsg::GO_TO_ANCHOR_LOW) {
@@ -555,9 +559,6 @@ void CeolHardware::start_implement_actuator_control_(uint32_t actuator_id)
 
 void CeolHardware::control_implement_actuator_position_(uint32_t actuator_id)
 {
-  if (caius_auto_) {
-    start_implement_actuator_control_(actuator_id);
-  }
   //  BO_ 2565850753 ActuatorLeft_Cmd: 8 ACTUATOR_LEFT
   //  SG_ Cmd_ActuatorLeft_Position : 0|16@1+ (0.1,0) [0|65535] "mm per bit" Vector__XXX
   //  SG_ Cmd_ActuatorLeft_MaxCurrent : 16|8@1+ (0.25,0) [0|255] "250mA per bit" Vector__XXX
@@ -569,10 +570,10 @@ void CeolHardware::control_implement_actuator_position_(uint32_t actuator_id)
 
   uint16_t desired_implement_position = desired_implement_position_.load() * 10000;
 
-  RCLCPP_INFO_STREAM(
-    rclcpp::get_logger("CeolHardware"),
-    "implement position id " << actuator_id << " measure " << actuator_position_measure
-                             << " desired " << desired_implement_position);
+  // RCLCPP_INFO_STREAM(
+  //   rclcpp::get_logger("CeolHardware"),
+  //   "implement position id " << actuator_id << " measure " << actuator_position_measure
+  //                            << " desired " << desired_implement_position);
 
   if (std::isfinite(desired_implement_position) && caius_auto_) {
     if (std::abs(desired_implement_position - actuator_position_measure) > 10) {
@@ -582,8 +583,18 @@ void CeolHardware::control_implement_actuator_position_(uint32_t actuator_id)
       sended_frame_data_[3] = 0xC8;
       sended_frame_data_[4] = 0x00;
       sended_frame_data_[5] = 0x00;
-      sended_frame_data_[6] = 0x00;
-      sended_frame_data_[7] = 0x00;
+      sended_frame_data_[6] = 0xFF;
+      sended_frame_data_[7] = 0xFF;
+      send_data_(actuator_id, 8, true);
+    } else {
+      sended_frame_data_[0] = 0x03;
+      sended_frame_data_[1] = 0xFB;
+      sended_frame_data_[2] = 0x50;
+      sended_frame_data_[3] = 0xC8;
+      sended_frame_data_[4] = 0x00;
+      sended_frame_data_[5] = 0x00;
+      sended_frame_data_[6] = 0xFF;
+      sended_frame_data_[7] = 0xFF;
       send_data_(actuator_id, 8, true);
     }
   }
