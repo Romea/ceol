@@ -81,7 +81,7 @@ CeolHardware::CeolHardware()
   caius_auto_(false),
   pending_activation_(false),
   speed_limitation_(false),
-  desired_implement_position_(std::numeric_limits<uint16_t>::quiet_NaN())
+  desired_implement_position_(std::numeric_limits<float>::quiet_NaN())
 {
 #ifndef NDEBUG
   open_log_file_();
@@ -564,7 +564,12 @@ void CeolHardware::control_implement_actuator_position_(uint32_t actuator_id)
   uint16_t actuator_position_measure =
     static_cast<uint16_t>(((received_frame_data_[1] << 8) + received_frame_data_[0]));
 
-  uint16_t desired_implement_position = desired_implement_position_.load() * 1000;
+  uint16_t desired_implement_position = desired_implement_position_.load() * 10000;
+
+  RCLCPP_INFO_STREAM(
+    rclcpp::get_logger("CeolHardware"),
+    "implement position id " << actuator_id << " measure " << actuator_position_measure
+                             << " desired " << desired_implement_position);
 
   if (std::isfinite(desired_implement_position) && caius_auto_) {
     if (std::abs(desired_implement_position - actuator_position_measure) > 10) {
