@@ -168,7 +168,7 @@ private:
 
   std::atomic<float> desired_implement_position_;
   float implement_anchor_high_{0.0};
-  float implement_anchor_low_{0.2};
+  float implement_anchor_low_{0.05};
   void start_implement_actuator_control_(uint32_t actuator_id);
   void control_implement_actuator_position_(uint32_t actuator_id);
   void implement_command_callback_(ImplementCommandMsg::ConstSharedPtr msg);

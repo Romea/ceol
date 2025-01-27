@@ -555,6 +555,9 @@ void CeolHardware::start_implement_actuator_control_(uint32_t actuator_id)
 
 void CeolHardware::control_implement_actuator_position_(uint32_t actuator_id)
 {
+  if (caius_auto_) {
+    start_implement_actuator_control_(actuator_id);
+  }
   //  BO_ 2565850753 ActuatorLeft_Cmd: 8 ACTUATOR_LEFT
   //  SG_ Cmd_ActuatorLeft_Position : 0|16@1+ (0.1,0) [0|65535] "mm per bit" Vector__XXX
   //  SG_ Cmd_ActuatorLeft_MaxCurrent : 16|8@1+ (0.25,0) [0|255] "250mA per bit" Vector__XXX
