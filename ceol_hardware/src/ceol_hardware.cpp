@@ -162,7 +162,7 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn CeolHa
       std::bind(&CeolHardware::implement_command_callback_, this, std::placeholders::_1);
 
     implement_command_sub_ = node_->create_subscription<ImplementCommandMsg>(
-      ns + "/implement_command", best_effort(1), callback);
+      ns + "/implement/rear/command", best_effort(1), callback);
 
     // RCLCPP_INFO_STREAM(
     //   rclcpp::get_logger("CeolHardware"),
