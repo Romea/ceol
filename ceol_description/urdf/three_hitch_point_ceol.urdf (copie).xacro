@@ -1,0 +1,446 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="test">
+
+    <!-- Files to include -->
+    <xacro:include filename="$(find ceol_description)/urdf/bar.xacro"/>
+    <!-- <xacro:include filename="$(find ceol_description)/ros2_control/three_point_hitch.ros2_control.xacro"/> -->
+    
+    <!-- Fixed world frame -->
+    <!-- <link name="world"/> -->
+
+    <!-- Elements without joints -->
+    <xacro:cylinder2 name="c1l" mass="1.0"  length="0.22" radius="0.02" zoffset="-0.11" x="0.0" y="0.0" z="0.0" rx="0.0" ry="0.0" rz="0.0" colour="Blue"/>
+    <!-- <xacro:cylinder2 name="c2l" mass="1.0"  length="0.22" radius="0.02" zoffset="-0.11" x="0.0" y="0.0" z="0.0" rx="0.0" ry="0.0" rz="0.0" colour="Green"/>
+    <xacro:cylinder2 name="c3l" mass="2.2"  length="0.40" radius="0.02" zoffset="0.05" x="0.0" y="0.0" z="0.0" rx="0.0" ry="0.0" rz="0.0" colour="Red"/> -->
+    <!-- <xacro:sphere name="c4l" mass="1.0"  radius="0.04" colour="Black"/>  --> -->
+ 
+     <!-- <xacro:cylinder2 name="c5l" mass="2.2"  length="0.20" radius="0.02" zoffset="-0.1" x="0.0" y="0.0" z="0.0" rx="0.0" ry="0.0" rz="0.0" colour="Red"/> --> -->
+    
+    <xacro:cylinder2 name="c1r" mass="1.0"  length="0.22" radius="0.02" zoffset="-0.11" x="0.0" y="0.0" z="0.0" rx="0.0" ry="0.0" rz="0.0" colour="Blue"/>
+    <xacro:cylinder2 name="c2r" mass="1.0"  length="0.22" radius="0.02" zoffset="-0.11" x="0.0" y="0.0" z="0.0" rx="0.0" ry="0.0" rz="0.0" colour="Green"/>
+    <xacro:cylinder2 name="c3r" mass="2.2"  length="0.40" radius="0.02" zoffset="0.05" x="0.0" y="0.0" z="0.0" rx="0.0" ry="0.0" rz="0.0" colour="Red"/>
+    <!-- <xacro:sphere name="c4r" mass="1.0"  radius="0.04" colour="Black"/>  -->
+
+    <xacro:cylinder2 name="c1c" mass="1.0"  length="0.43" radius="0.02" zoffset="-0.215" x="0.0" y="0.0" z="0.0" rx="0.0" ry="0.0" rz="0.0" colour="Blue"/>
+    <xacro:cylinder2 name="c2c" mass="1.0"  length="0.46" radius="0.02" zoffset="-0.23" x="0.0" y="0.0" z="0.0" rx="0.0" ry="0.0" rz="0.0" colour="Green"/>
+    <xacro:cylinder2 name="c3c" mass="1.0"  length="0.44" radius="0.02" zoffset="0.0" x="0.0" y="0.0" z="0.0" rx="0.0" ry="0.0" rz="0.0" colour="Green"/>
+    <!-- <xacro:cylinder2 name="c4c" mass="10.0"  length="2" radius="0.02" zoffset="-1.0" x="0.0" y="0.0" z="0.0" rx="0.0" ry="0.0" rz="0.0" colour="Green"/> -->
+    <!-- <xacro:cylinder2 name="c5c" mass="100.0"  length="2" radius="0.2" zoffset="-1.0" x="0.0" y="0.0" z="0.0" rx="0.0" ry="0.0" rz="0.0" colour="Green"/> -->
+
+   
+    <link name="bottoml">
+        <inertial>
+            <mass  value="10"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="${10/12.0*(3.0*0.1*0.1 + 0.2*0.2)}" ixy="0.0" ixz="0.0"
+                     iyy="${10/12.0*(3.0**0.1*0.1 + 0.2*0.2)}" iyz="0.0"
+                     izz="${10*0.1*0.1/2.0}"/>
+        </inertial>
+    </link>
+
+    <joint name="bottoml_to_world" type="fixed">
+        <parent link="ceol_base_link"/>
+        <child  link="bottoml"/>
+        <origin xyz="-0.55 -0.22 0.3" rpy="0 0 0"/>
+    </joint>
+
+    <joint name="c1l_to_bottoml" type="continuous">
+        <axis xyz="0 1  0"/>
+        <parent link="bottoml"/>
+        <child  link="c1l"/>
+        <origin xyz="-0.13 0 0.52" rpy="0 ${0/180*pi} 0"/>        
+    </joint>
+
+
+
+    <joint name="c2l_to_c1l" type="prismatic">
+        <axis xyz="0 0 1"/>
+        <parent link="c1l"/>
+        <child  link="c2l"/>
+        <origin xyz="0.0 0 -0.22" rpy="0 0 0"/>
+        <limit effort="10000.0" lower="-0.10" upper="0.0" velocity="0.02"/>
+        <dynamics damping="0.0" friction="100.0" />
+    </joint>
+
+    <joint name="c3l_to_c2l" type="continuous">
+        <axis xyz="0 1 0"/>
+        <parent link="c2l"/>
+        <child  link="c3l"/>
+        <origin xyz="0.0 0 -0.22" rpy="0 ${-60*pi/180} 0"/>
+    </joint>
+
+
+    <!-- <joint name="c4l_to_c3l" type="fixed">
+        <parent link="c3l"/>
+        <child  link="c4l"/>
+        <origin xyz="0.0 0 0.25" rpy="0 0 0"/>
+    </joint> -->
+
+
+    <link name="bottomr">
+        <inertial>
+            <mass  value="10"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="${10/12.0*(3.0*0.1*0.1 + 0.2*0.2)}" ixy="0.0" ixz="0.0"
+                     iyy="${10/12.0*(3.0**0.1*0.1 + 0.2*0.2)}" iyz="0.0"
+                     izz="${10*0.1*0.1/2.0}"/>
+        </inertial>
+
+    </link>
+
+    <joint name="bottomr_to_world" type="fixed">
+        <parent link="ceol_base_link"/>
+        <child  link="bottomr"/>
+        <origin xyz="-0.55 0.22 0.3" rpy="0 0 0"/>
+    </joint>
+
+    <joint name="c1l_to_bottomr" type="continuous">
+        <axis xyz="0 1  0"/>
+        <parent link="bottomr"/>
+        <child  link="c1r"/>
+        <origin xyz="-0.13 0 0.52" rpy="0 ${0/180*pi} 0"/>        
+    </joint>
+
+    <joint name="c2r_to_c1r" type="prismatic">
+        <axis xyz="0 0 1"/>
+        <parent link="c1r"/>
+        <child  link="c2r"/>
+        <origin xyz="0.0 0 -0.22" rpy="0 0 0"/>
+        <limit effort="10000.0" lower="-0.10" upper="0.0" velocity="0.02"/>
+        <dynamics damping="0.0" friction="100.0" />
+    </joint>
+
+    <joint name="c3r_to_c2r" type="continuous">
+        <axis xyz="0 1 0"/>
+        <parent link="c2r"/>
+        <child  link="c3r"/>
+        <origin xyz="0.0 0 -0.22" rpy="0 ${-60*pi/180} 0"/>
+    </joint>
+
+
+    <!-- <joint name="c4r_to_c3r" type="fixed">
+        <parent link="c3r"/>
+        <child  link="c4r"/>
+        <origin xyz="0.0 0 0.25" rpy="0 0 0"/>
+    </joint> -->
+
+
+    <link name="up">
+        <inertial>
+            <mass  value="10"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="${10/12.0*(3.0*0.1*0.1 + 0.2*0.2)}" ixy="0.0" ixz="0.0"
+                     iyy="${10/12.0*(3.0**0.1*0.1 + 0.2*0.2)}" iyz="0.0"
+                     izz="${10**0.1*0.1/2.0}"/>
+        </inertial>
+
+    </link>
+
+    <joint name="up_to_world" type="fixed">
+        <parent link="ceol_base_link"/>
+        <child  link="up"/>
+        <origin xyz="-0.55 0.0 0.7" rpy="0 0 0"/>
+    </joint>
+
+    <joint name="c1c_to_up" type="continuous">
+        <axis xyz="0 1 0"/>
+        <parent link="up"/>
+        <child  link="c1c"/>
+        <origin xyz="-0.0 0 0" rpy="0 ${128/180*pi} 0"/>        
+
+    </joint>
+
+   <joint name="c2c_to_c1c" type="continuous">
+        <axis xyz="0 1 0"/>
+        <parent link="c1c"/>
+        <child  link="c2c"/>
+        <origin xyz="-0.0 0 -0.43" rpy="0 ${-128/180*pi} 0"/>  
+    </joint>
+
+     <joint name="c3c_to_c2c" type="fixed">
+        <parent link="c2c"/>
+        <child  link="c3c"/>
+        <origin xyz="-0.0 0 -0.46" rpy="${pi/2} 0 0"/>  
+    </joint>
+
+    <!-- <joint name="c4c_to_c2c" type="fixed">
+        <parent link="c2c"/>
+        <child  link="c4c"/>
+        <origin xyz="-0.0 0 -0.46" rpy="0 ${pi/2} 0"/>  
+    </joint> -->
+
+    <!-- <joint name="c4c_to_c2c" type="continuous">
+        <axis xyz="0 1 0"/>
+        <parent link="c2c"/>
+        <child  link="c4c"/>
+        <origin xyz="-0.0 0 -0.46" rpy="0 ${pi/2} 0"/>  
+    </joint>
+
+    <joint name="c5c_to_c4c" type="continuous">
+        <axis xyz="0 0 1"/>
+        <parent link="c4c"/>
+        <child  link="c5c"/>
+        <origin xyz="0 -1 -2" rpy="${pi/2} 0  0"/>  
+    </joint> -->
+
+    <!-- <joint name="c3cl_to_c3c" type="continuous">
+        <axis xyz="0 0 1"/>
+        <parent link="c3c"/>
+        <child  link="c3cl"/>
+        <origin xyz="-0.0 0 0.7" rpy="0 0 0"/>  
+    </joint>
+
+    <joint name="c3cr_to_c3c" type="continuous">
+        <axis xyz="0 0 1"/>
+        <parent link="c3c"/>
+        <child  link="c3cr"/>
+        <origin xyz="-0.0 0 -0.7" rpy="0 0 0"/>  
+    </joint> -->
+
+    <gazebo>
+
+
+        <!-- <joint name='bottoml_to_c3l' type='revolute'>
+        <pose relative_to='ceol_base_footprint'>-2.0 -0.22 0.403 0 0 0</pose>
+        <parent>ceol_base_footprint</parent>
+        <child>c3l</child>
+        <axis>
+            <xyz>0 1 0</xyz>
+            <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+            </limit>
+            <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+            </dynamics>
+        </axis>
+        </joint>  -->
+
+
+
+        <!-- <joint name='bottomr_to_c3r' type='revolute'>
+        <pose relative_to='ceol_base_footprint'>-2.0 0.22 0.403 0 0 0</pose>
+        <parent>ceol_base_footprint</parent>
+        <child>c3r</child>
+        <axis>
+            <xyz>0 1 0</xyz>
+            <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+            </limit>
+            <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+            </dynamics>
+        </axis>
+        </joint> -->
+
+
+        <joint name='bottoml_to_c3l' type='ball'>
+            <pose relative_to='ceol_base_footprint'>-0.55 -0.22 0.403 0 0 0</pose>
+            <parent>ceol_base_footprint</parent>
+            <child>c3l</child>
+        </joint>
+
+
+         <joint name='bottom_to_c3r' type='ball'>
+            <pose relative_to='ceol_base_footprint'>-0.55 0.22 0.403 0 0 0</pose>
+            <parent>ceol_base_footprint</parent>
+            <child>c3r</child>
+        </joint> 
+
+        <!-- <joint name='c3l_to_c3c' type='revolute'>
+        <pose relative_to='c2c'>0.3 0 -0.6 0 1.5708 0</pose>
+        <parent>c2c</parent>
+        <child>c3l</child>
+        <axis>
+            <xyz>0 0 1</xyz>
+            <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+            </limit>
+            <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+            </dynamics>
+        </axis>
+        </joint> -->
+
+        <joint name='c3l_to_c3c' type='ball'>
+            <pose relative_to='c2c'>0 -0.22  -0.46 0 0  0</pose>
+            <parent>c2c</parent>
+            <child>c3l</child>
+        </joint>
+
+
+        <!-- <joint name='c3r_to_c3c' type='revolute'>
+        <pose relative_to='c2c'>-0.3 0 -0.6 0 1.5708 0</pose>
+        <parent>c2c</parent>
+        <child>c3r</child>
+        <axis>
+            <xyz>0 0 1</xyz>
+            <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+            </limit>
+            <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+            </dynamics>
+        </axis>
+        </joint> -->
+
+        <joint name='c3r_to_c3c' type='ball'>
+            <pose relative_to='c2c'>0 0.22 -0.46 0 0 0</pose>
+            <parent>c2c</parent>
+            <child>c3r</child>
+        </joint>
+
+        <joint name='c4c_to_c2c' type='ball'>
+            <pose relative_to='c2c'>0 0 -0.46 0 1.5708 0</pose>
+            <parent>c2c</parent>
+            <child>c4c</child>
+        </joint>
+
+
+        <!-- <joint name='c4c_to_c2c' type='revolute'>
+        <pose relative_to='c2c'>0 0 -0.46 0 1.5708 0</pose>
+        <parent>c2c</parent>
+        <child>c4c</child>
+        <axis>
+            <xyz>0 1 0</xyz>
+            <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+            </limit>
+            <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+            </dynamics>
+        </axis>
+        </joint>
+        <link name='c4c'> -->
+
+        <joint name='c4c_to_c2c' type='ball'>
+            <pose relative_to='c2c'>0 0 -0.46 0 1.5708 0</pose>
+            <parent>c2c</parent>
+            <child>c4c</child>
+        </joint>
+
+        <link name='c4c'>
+        <pose relative_to='c4c_to_c2c'>0 0 0 0 -0 0</pose>
+        <inertial>
+            <pose>0 0 -1 0 -0 0</pose>
+            <mass>10</mass>
+            <inertia>
+            <ixx>3.33433</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>3.33433</iyy>
+            <iyz>0</iyz>
+            <izz>0.002</izz>
+            </inertia>
+        </inertial>
+        <collision name='c4c_collision'>
+            <pose>0 0 -1 0 -0 0</pose>
+            <geometry>
+            <cylinder>
+                <length>2</length>
+                <radius>0.02</radius>
+            </cylinder>
+            </geometry>
+            <surface>
+            <contact>
+                <ode/>
+            </contact>
+            <friction>
+                <ode/>
+            </friction>
+            </surface>
+        </collision>
+        <visual name='c4c_visual'>
+            <pose>0 0 -1 0 -0 0</pose>
+            <geometry>
+            <cylinder>
+                <length>2</length>
+                <radius>0.02</radius>
+            </cylinder>
+            </geometry>
+            <material>
+            <script>
+                <name>Gazebo/Green</name>
+                <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+            </material>
+        </visual>
+        <self_collide>1</self_collide>
+        </link>
+        <joint name='c5c_to_c4c' type='revolute'>
+        <pose relative_to='c4c'>0 -1 -2 1.5708 -0 0</pose>
+        <parent>c4c</parent>
+        <child>c5c</child>
+        <axis>
+            <xyz>0 0 1</xyz>
+            <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+            </limit>
+            <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+            </dynamics>
+        </axis>
+        </joint>
+        <link name='c5c'>
+        <pose relative_to='c5c_to_c4c'>0 0 0 0 -0 0</pose>
+        <inertial>
+            <pose>0 0 -1 0 -0 0</pose>
+            <mass>100</mass>
+            <inertia>
+            <ixx>34.3333</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>34.3333</iyy>
+            <iyz>0</iyz>
+            <izz>2</izz>
+            </inertia>
+        </inertial>
+        <collision name='c5c_collision'>
+            <pose>0 0 -1 0 -0 0</pose>
+            <geometry>
+            <cylinder>
+                <length>2</length>
+                <radius>0.2</radius>
+            </cylinder>
+            </geometry>
+            <surface>
+            <contact>
+                <ode/>
+            </contact>
+            <friction>
+                <ode/>
+            </friction>
+            </surface>
+        </collision>
+        <visual name='c5c_visual'>
+            <pose>0 0 -1 0 -0 0</pose>
+            <geometry>
+            <cylinder>
+                <length>2</length>
+                <radius>0.2</radius>
+            </cylinder>
+            </geometry>
+            <material>
+            <script>
+                <name>Gazebo/Green</name>
+                <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+            </material>
+        </visual>
+        <self_collide>1</self_collide>
+        </link>
+
+     </gazebo> -->
+
+</robot>

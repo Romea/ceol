@@ -5,4 +5,3 @@ include:
 
 variables:
   PKGS_TO_BUILD_TEST: "ceol_bringup ceol_description ceol_hardware"
-  ROS_DISTRO_TO_TEST: "humble"

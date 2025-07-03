@@ -26,7 +26,7 @@ import xml.etree.ElementTree as ET
 def urdf_xml(mode):
 
     exe = (
-        get_package_prefix("ceol_bringup") + "/lib/ceol_bringup/urdf_description.py"
+        get_package_prefix("ceol_bringup") + "/lib/ceol_bringup/generate_urdf_description.py"
     )
 
     return ET.fromstring(
@@ -37,9 +37,24 @@ def urdf_xml(mode):
     )
 
 
-def ros2_control_urdf_xml(mode):
-    urdf_xml(mode)
-    return ET.parse("/tmp/robot_base_ros2_control.urdf")
+def ros2_control_xml(mode):
+
+    exe = (
+        get_package_prefix("ceol_bringup")
+        + "/lib/ceol_bringup/generate_ros2_control_description.py"
+    )
+
+    return ET.fromstring(
+        subprocess.check_output(
+            [
+                exe,
+                "mode:" + mode,
+                "base_name:base",
+                "robot_namespace:robot",
+            ],
+            encoding="utf-8",
+        )
+    )
 
 
 def test_footprint_link_name():
@@ -48,17 +63,17 @@ def test_footprint_link_name():
 
 def test_hardware_plugin_name():
 
-    assert ros2_control_urdf_xml("live").find(
+    assert ros2_control_xml("live").find(
         "ros2_control/hardware/plugin"
     ).text == "ceol_hardware/CeolHardware"
 
-    assert ros2_control_urdf_xml("simulation").find(
+    assert ros2_control_xml("simulation").find(
         "ros2_control/hardware/plugin"
     ).text == "romea_mobile_base_gazebo/GazeboSystemInterface2THD"
 
 
 def test_controller_filename_name():
     assert (
-        urdf_xml("simulation").find("gazebo/plugin/controller_manager_config_file").text
+        urdf_xml("simulation_gazebo_classic").find("gazebo/plugin/parameters").text
         == get_package_share_directory("ceol_bringup") + "/config/controller_manager.yaml"
     )

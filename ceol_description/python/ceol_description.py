@@ -1,27 +1,53 @@
-#!/usr/bin/env python3
-# Copyright 2023 Agreenculture
-# Copyright 2023 INRAE, French National Research Institute for Agriculture, Food and Environment
+# Copyright 2022 INRAE, French National Research Institute for Agriculture, Food and Environment
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 
 import xacro
-
+import yaml
 from ament_index_python.packages import get_package_share_directory
 
+import romea_common_description
+from romea_mobile_base_description import get_specification_units, get_complete_configuration
 
-def urdf(prefix, mode, base_name, controller_manager_config_yaml_file, ros_prefix):
+
+def get_specifications_path_file():
+    return (
+        get_package_share_directory("ceol_description")
+        + "/config/ceol.yaml"
+    )
+
+
+def get_specifications_configuration():
+    with open(get_specifications_path_file(), "r") as f:
+        return yaml.safe_load(f)
+
+
+def get_configuration():
+    specifications = get_specifications_configuration()
+    configuration = get_complete_configuration(specifications)
+    configuration["model"] = "ceol"
+    configuration["version"] = ""
+    configuration["manufacturer"] = "agreenculture"
+    return configuration
+
+
+def generate_configuration_file(configuration, extended):
+    units = get_specification_units()
+    return romea_common_description.generate_configuration_file(configuration, units, extended)
+
+
+def generate_ros2_control_description(prefix, mode, base_name):
 
     if mode == "simulation":
         mode += "_gazebo_classic"
@@ -40,13 +66,19 @@ def urdf(prefix, mode, base_name, controller_manager_config_yaml_file, ros_prefi
         },
     )
 
-    ros2_control_config_urdf_file = "/tmp/"+prefix+base_name+"_ros2_control.urdf"
+    return ros2_control_urdf_xml.toprettyxml(indent="  ")
 
-    with open(ros2_control_config_urdf_file, "w") as f:
-        f.write(ros2_control_urdf_xml.toprettyxml())
+
+def generate_urdf_description(
+        prefix, mode, base_name, controller_manager_config_yaml_file, ros_prefix
+):
+
+    if mode == "simulation":
+        mode += "_gazebo_classic"
 
     base_xacro_file = (
-        get_package_share_directory("ceol_description") + "/urdf/ceol.urdf.xacro"
+        get_package_share_directory("ceol_description")
+        + "/urdf/ceol.urdf.xacro"
     )
 
     base_urdf_xml = xacro.process_file(
@@ -56,9 +88,8 @@ def urdf(prefix, mode, base_name, controller_manager_config_yaml_file, ros_prefi
             "mode": mode,
             "base_name": base_name,
             "controller_manager_config_yaml_file": controller_manager_config_yaml_file,
-            "ros2_control_config_urdf_file": ros2_control_config_urdf_file,
-            "ros_prefix": ros_prefix
+            # "ros_prefix": ros_prefix,
         },
     )
 
-    return base_urdf_xml.toprettyxml()
+    return base_urdf_xml.toprettyxml(indent="  ")

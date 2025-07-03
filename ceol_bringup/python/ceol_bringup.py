@@ -1,28 +1,44 @@
-# Copyright 2023 Agreenculture
-# Copyright 2023 INRAE, French National Research Institute for Agriculture, Food and Environment
+# Copyright 2022 INRAE, French National Research Institute for Agriculture, Food and Environment
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 
 from ament_index_python.packages import get_package_share_directory
-from ceol_description import urdf
+import ceol_description
 
 
-def urdf_description(prefix, mode, base_name, ros_prefix):
+def get_configuration():
+    return ceol_description.get_configuration()
 
-    controller_manager_yaml_file = (
-        get_package_share_directory("ceol_bringup") + "/config/controller_manager.yaml"
+
+def generate_configuration_file(extended):
+    configuration = get_configuration()
+    return ceol_description.generate_configuration_file(configuration, extended)
+
+
+def generate_ros2_control_description(prefix, mode, base_name):
+    return ceol_description.generate_ros2_control_description(
+        prefix, mode, base_name
     )
 
-    return urdf(prefix, mode, base_name, controller_manager_yaml_file, ros_prefix)
+
+def generate_urdf_description(prefix, mode, base_name, ros_prefix):
+
+    controller_manager_yaml_file = (
+        get_package_share_directory("ceol_bringup")
+        + "/config/controller_manager.yaml"
+    )
+
+    return ceol_description.generate_urdf_description(
+        prefix, mode, base_name, controller_manager_yaml_file, ros_prefix
+    )

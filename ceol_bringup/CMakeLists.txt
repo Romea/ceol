@@ -17,7 +17,9 @@ install(
 ament_python_install_module(python/ceol_bringup.py)
 
 install(PROGRAMS
-  scripts/urdf_description.py
+  scripts/generate_configuration_file.py
+  scripts/generate_ros2_control_description.py
+  scripts/generate_urdf_description.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

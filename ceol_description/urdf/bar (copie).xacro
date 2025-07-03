@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="element">
+
+    <xacro:macro name="box_inertia" params="mass lx ly lz  x:=0 y:=0 z:=0 rx:=0 ry:=0 rz:=0">
+        <inertial>
+            <mass value="${mass}" />
+            <origin xyz="${x} ${y} ${z}" rpy="${rx} ${ry} ${rz}" />
+            <inertia ixx="${mass/12*(ly*ly + lz*lz)}" ixy="0.0" ixz="0.0"
+                iyy="${mass/12*(lx*lx + lz*lz)}" iyz="0.0"
+                izz="${mass/12*(lx*lx + ly*ly)}" />
+        </inertial>
+    </xacro:macro>
+
+    <xacro:macro name="sphere_inertia" params="mass radius x:=0 y:=0 z:=0 rx:=0 ry:=0 rz:=0">
+        <inertial>
+            <mass value="${mass}" />
+            <origin xyz="${x} ${y} ${z}" rpy="${rx} ${ry} ${rz}" />
+            <inertia ixx="${2*mass*radius*radius/5.0}" ixy="0.0" ixz="0.0"
+                iyy="${2*mass*radius*radius/5.0}" iyz="0.0"
+                izz="${2*mass*radius*radius/5.0}" />
+        </inertial>
+    </xacro:macro>
+
+    <xacro:macro name="cylinder_inertia"
+        params="mass length radius x:=0 y:=0 z:=0 rx:=0 ry:=0 rz:=0">
+        <inertial>
+            <mass value="${mass}" />
+            <origin xyz="${x} ${y} ${z}" rpy="${rx} ${ry} ${rz}" />
+            <inertia ixx="${mass/12.0*(3.0*radius*radius + length*length)}" ixy="0.0" ixz="0.0"
+                iyy="${mass/12.0*(3.0*radius*radius + length*length)}" iyz="0.0"
+                izz="${mass*radius*radius/2.0}" />
+        </inertial>
+    </xacro:macro>
+
+
+    <!-- Macro for a single element of box geometry -->
+    <!-- <xacro:macro name="cylinder"
+        params="name mass length radius c1x c1y c2z rx ry rz colour turn_off_gravity:=false">
+        <link name="${name}">
+            <visual>
+                <origin xyz="${x} ${y} ${-length/2}" rpy="${rx} ${ry} ${rz}" />
+                <geometry>
+                    <cylinder length="${length}" radius="${radius}" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="${x} ${y} ${-length/2}" rpy="${rx} ${ry} ${rz}" />
+                <geometry>
+                    <cylinder length="${length}" radius="${radius}" />
+                </geometry>
+            </collision>
+
+            <xacro:cylinder_inertia mass="${mass}" length="${length}" radius="${radius}"
+                z="${-length/2}" />
+        </link>
+
+        <gazebo reference="${name}">
+            <selfCollide>true</selfCollide>
+            <material>Gazebo/${colour}</material>
+        </gazebo>
+    </xacro:macro> -->
+
+    <xacro:macro name="cylinder2"
+        params="name mass clength radius zoffset c2x c2y c2z rx ry rz colour turn_off_gravity:=false">
+        <!-- Link without joint -->
+        <link name="${name}">
+            <visual>
+                <origin xyz="${c2x} ${c2y} ${zoffset}" rpy="${rx} ${ry} ${rz}" />
+                <geometry>
+                    <cylinder length="${clength}" radius="${radius}" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="${c2x} ${c2y} ${zoffset}" rpy="${rx} ${ry} ${rz}" />
+                <geometry>
+                    <cylinder length="${clength}" radius="${radius}" />
+                </geometry>
+            </collision>
+
+            <xacro:cylinder_inertia
+                mass="${mass}" length="${clength}" radius="${radius}"
+                z="${zoffset}" />
+        </link>
+
+        <!-- Gazebo simulation settings -->
+        <gazebo reference="${name}">
+            <selfCollide>true</selfCollide>
+            <!-- <static>false</static> -->
+            <!-- <turnGravityOff>true</turnGravityOff>  -->
+            <material>Gazebo/${colour}</material>
+        </gazebo>
+    </xacro:macro>
+
+    <xacro:macro name="sphere" params="name mass radius colour turn_off_gravity:=false">
+        <!-- Link without joint -->
+        <link name="${name}">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <sphere radius="${radius}" />
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <sphere radius="${radius}" />
+                </geometry>
+            </collision>
+
+            <xacro:sphere_inertia mass="${mass}" radius="${radius}" />
+        </link>
+
+        <!-- Gazebo simulation settings -->
+        <gazebo reference="${name}">
+            <selfCollide>true</selfCollide>
+            <!-- <static>false</static> -->
+            <!-- <turnGravityOff>true</turnGravityOff>  -->
+            <material>Gazebo/${colour}</material>
+        </gazebo>
+    </xacro:macro>
+
+</robot>
