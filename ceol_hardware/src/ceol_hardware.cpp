@@ -175,12 +175,8 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn CeolHa
   }
 }
 
-#if ROS_DISTRO == ROS_GALACTIC
-hardware_interface::return_type CeolHardware::read()
-#else
 hardware_interface::return_type CeolHardware::read(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
-#endif
 {
   // RCLCPP_INFO(rclcpp::get_logger("CeolHardware"), "Read data from robot");
 
@@ -193,12 +189,8 @@ hardware_interface::return_type CeolHardware::read(
   return hardware_interface::return_type::OK;
 }
 
-#if ROS_DISTRO == ROS_GALACTIC
-hardware_interface::return_type CeolHardware::write()
-#else
 hardware_interface::return_type CeolHardware::write(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
-#endif
 {
   // RCLCPP_INFO(rclcpp::get_logger("CeolHardware"), "Send command to robot");
   get_hardware_command_();
