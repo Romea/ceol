@@ -3,7 +3,7 @@
 <package format="3">
   <name>ceol_bringup</name>
   <version>0.0.0</version>
-  <description>Package containing aroco launch files.</description>
+  <description>Package containing ceol launch files.</description>
 
   <maintainer email="jean.laneurit@inrae.fr">Jean Laneurit</maintainer>
 
