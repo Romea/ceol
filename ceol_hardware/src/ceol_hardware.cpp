@@ -232,7 +232,7 @@ void CeolHardware::receive_data_()
       auto current_time = std::chrono::system_clock::now();
       count++;
       if (std::chrono::duration_cast<std::chrono::seconds>(current_time - previous_time).count()) {
-        //RCLCPP_INFO(node_->get_logger(), "CAN freq: %4lu Hz", count);
+        // RCLCPP_INFO(node_->get_logger(), "CAN freq: %4lu Hz", count);
         count = 0;
         previous_time = current_time;
       }

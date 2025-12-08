@@ -16,11 +16,10 @@
 
 
 import subprocess
+import xml.etree.ElementTree as ET
 
 from ament_index_python import get_package_prefix
 from ament_index_python.packages import get_package_share_directory
-
-import xml.etree.ElementTree as ET
 
 
 def urdf_xml(mode):

@@ -22,6 +22,7 @@
 #include <atomic>
 #include <fstream>
 #include <memory>
+#include <string>
 #include <thread>
 
 // ros

@@ -109,7 +109,8 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 ${pi/2}" />
         <geometry>
-          <mesh filename="package://ceol_description/meshes/ceol_wheel.dae" />
+          <!-- <mesh filename="package://ceol_description/meshes/ceol_wheel.dae" /> -->
+          <mesh filename="file://$(find ceol_description)/meshes/ceol_wheel.dae" />
         </geometry>
       </visual>
     </link>
@@ -124,7 +125,8 @@
       <visual>
         <origin xyz="0 0 0" rpy="0 0 ${pi/2}" />
         <geometry>
-          <mesh filename="package://ceol_description/meshes/ceol_wheel.dae" scale="-1 1 1" />
+          <!-- <mesh filename="package://ceol_description/meshes/ceol_wheel.dae" scale="-1 1 1" /> -->
+          <mesh filename="file://$(find ceol_description)/meshes/ceol_wheel.dae" />
         </geometry>
       </visual>
     </link>
