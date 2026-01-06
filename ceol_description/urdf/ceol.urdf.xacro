@@ -10,9 +10,9 @@
   <xacro:include filename="$(find ceol_description)/urdf/ceol.xacro" />
   <xacro:ceol mode="$(arg mode)" prefix="$(arg prefix)" />
 
-  <xacro:include filename="$(find campero_description)/urdf/campero.simulation.xacro" />
+  <xacro:include filename="$(find ceol_description)/urdf/ceol.simulation.xacro" />
 
-  <xacro:campero_simulation
+  <xacro:ceol_simulation
     mode="$(arg mode)"
     base_name="$(arg base_name)"
     ros_prefix="$(arg ros_prefix)"
