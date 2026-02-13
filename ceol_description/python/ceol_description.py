@@ -92,7 +92,7 @@ def generate_urdf_description(
             "mode": mode,
             "base_name": base_name,
             "controller_manager_config_yaml_file": controller_manager_config_yaml_file,
-            # "ros_prefix": ros_prefix,
+            "ros_prefix": ros_prefix,
         },
     )
 
