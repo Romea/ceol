@@ -54,7 +54,7 @@ def generate_configuration_file(configuration, extended):
 def generate_ros2_control_description(prefix, mode, base_name):
 
     if mode == "simulation":
-        mode += "_gazebo_classic"
+        mode += "_gazebo"
 
     ros2_control_xacro_file = (
         get_package_share_directory("ceol_description")
@@ -78,7 +78,7 @@ def generate_urdf_description(
 ):
 
     if mode == "simulation":
-        mode += "_gazebo_classic"
+        mode += "_gazebo"
 
     base_xacro_file = (
         get_package_share_directory("ceol_description")

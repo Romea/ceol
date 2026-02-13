@@ -30,11 +30,11 @@
     </xacro:macro>
 
     <xacro:macro name="left_idler_wheel_visual">
-        <xacro:sprocket_wheel_visual />
+        <xacro:idler_wheel_visual />
     </xacro:macro>
 
     <xacro:macro name="right_idler_wheel_visual">
-        <xacro:sprocket_wheel_visual />
+        <xacro:idler_wheel_visual />
     </xacro:macro>
 
 </robot>
