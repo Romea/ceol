@@ -36,7 +36,7 @@ geometry:
 
 tracks_speed_control:
   command:
-    maximal_speed: 2.0
+    maximal_speed: 1.6
     maximal_acceleration: 1.0
   sensor:
     speed_std: 0.1
