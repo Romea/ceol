@@ -1,72 +1,179 @@
-# ceol_bringup #
+# ceol_bringup
 
-## 1 Launch files ##
+## 1) Overview
 
-The ceol_bringup package provides a suite of launch files enabling both manual and automated control of  Ceol robot, either in real-time or in simulation.
+`ceol_bringup` connects the Ceol description, hardware, simulation and teleoperation packages to the generic `romea_mobile_base_meta_bringup` workflow.
 
-![Controller mapping](doc/ceol.jpg)
+It provides:
 
-### 1.1 Base launch file ###
+* robot-specific generation functions for configuration, URDF and `ros2_control` descriptions;
+* launch files for live control, Gazebo simulation and teleoperation;
+* controller manager and mobile base controller parameter files.
 
-The **ceol_base.launch.py** file, located in the launch directory, is responsible for starting the controller manager, the robot's controller, and a command multiplexer. The configuration of the controller manager and the robot controller are defined in the **controller_manager.yaml** and **mobile_base_controller.yaml** files, respectively, which are located in the config directory. By default, the **MobileBaseEnhancedController2TD** controller, provided by the **romea_mobile_base_controller** package, is used to operate Ceol robot.
+The Ceol mobile base uses the `2THD` architecture and is commanded as a skid-steering robot. Its default controller is `romea_mobile_base_controllers/MobileBaseEnhancedController2TD`, which can use IMU angular speed feedback in addition to track speed feedback.
 
-You can launch these nodes via command line:
+## 2) Generated artifacts
 
-```console
-ros2 launch ceol_bringup ceol_base_launch.py mode:=simulation robot_namespace:=adap2e base_name:=base
+The Python module `ceol_bringup` delegates most generation work to `ceol_description` and adds bringup-specific configuration such as the controller manager parameter file.
+
+It provides the functions expected by `romea_mobile_base_meta_bringup`:
+
+| Function | Purpose |
+|---|---|
+| `get_configuration()` | returns the compact mobile base configuration |
+| `generate_configuration_file(extended)` | generates the mobile base configuration file |
+| `generate_urdf_description(prefix, mode, base_name, ros_prefix)` | generates the Ceol URDF description |
+| `generate_ros2_control_description(prefix, mode, base_name)` | generates the Ceol `ros2_control` description |
+
+The executable scripts in `scripts/` expose these functions from the command line.
+
+The configuration generator writes the compact `2THD` mobile base configuration used by controllers, teleoperation and launch files. It is derived from `ceol_description/config/ceol.yaml`.
+
+```bash
+ros2 run ceol_bringup generate_configuration_file.py \
+  extended:false
 ```
 
-where:
-- ***mode*** (choices: ***simulation*** or ***live***) defines the demonstration mode.  
-- ***robot_namespace*** (default: ***ceol***) sets the main ROS namespace where all Ceol nodes are launched. 
-- ***base_name*** (default: ***base***) sets the ROS sub-namespace in which controller nodes are launched
-`
+The URDF generator writes the Ceol robot description. It contains the `2THD` continuous-track link and joint structure, inertial data, collision geometry, visual meshes and the simulator plugin block when a simulation mode is selected.
 
-### 1.2 Teleop launch file ###
-
-The **ceol_teleop.launch.py** file, located in the launch directory, is used to execute the **skid_steering_teleop_node** provided by the **romea_teleop_drivers** package to control the motion of the Ceol robot. You can launch the teleop node via the command line:
-
-```console
-ros2 launch ceol_bringup ceol_teleop.launch.py joystick_type:=xbox joystick_driver:=joy joystic_topic:=joystick/joy teleop_configuration_file_path:=/path_to_file/teleop.yaml
+```bash
+ros2 run ceol_bringup generate_urdf_description.py \
+  robot_namespace:ceol \
+  base_name:base \
+  mode:simulation_gazebo
 ```
 
-where:
+The `ros2_control` generator writes the hardware description consumed by `controller_manager`. It declares the hardware plugin selected by the mode, the geometric hardware parameters and the command/state interfaces for the sprocket wheel joints.
 
-- ***joystick_type*** (choices: ***xbox*** or ***dualshock4***) specifies the type of joystick
-- ***joystick_driver*** (choices: ***joy*** or ***ds4_driver***, default: ***joy***) defines the ROS2 driver package used to control the joystick
-- ***joystic_topic*** (default: **joystick/joy**) defines the name of the output topic of the  joystick node 
-- ***teleop_configuration_file_path*** specifies the absolute path of teleoperation configuration file 
-
-The default teleop configuration file can be found in the config directory of the **ceol_description** package, and the joystick mapping can be found in the config directory of the **romea_teleop_description** package. To move the robot you need to keep your finger pressed on either the slow mode or turbo mode button and use the sticks to control the speed and direction of the robot.
-
-![Controller mapping](doc/teleop.jpg)
-
-## 2.3 Test launch file
-
-The **ceol_test.launch.py** file, located in the launch directory, is used to test the robot control pipeline in both live and simulation contexts. The following nodes are launched: controller manager, robot controller, joystick node, and teleop node using an Xbox joystick.
-
-```console
-ros2 launch ceol_bringup ceol_test.launch.py mode:=simulation
+```bash
+ros2 run ceol_bringup generate_ros2_control_description.py \
+  robot_namespace:ceol \
+  base_name:base \
+  mode:live
 ```
 
-where:
+## 3) Launch files
 
-- ***mode*** (choices: ***simulation*** or ***live***) defines the demonstration mode,   
+### 3.1) Base launch
 
-Below, you can see the ROS pipeline when selecting the simulation mode. In live mode, the pipeline remains the same, except that the **gazebo_ros2_controller_manager** is replaced by a standard **ros2_controller_manager**.
+`launch/ceol_base.launch.py` starts the Ceol mobile base control stack.
 
-![Controller mapping](doc/test_pipeline.jpg)
+It:
 
-# 2 URDF description:
+* receives the generated robot URDF and `ros2_control` description from the meta-bringup launch context;
+* starts `controller_manager/ros2_control_node` in non-Gazebo modes;
+* loads `joint_state_broadcaster`;
+* loads `mobile_base_controller` using `romea_mobile_base_controllers/MobileBaseEnhancedController2TD`;
+* starts `romea_cmd_mux` and remaps its output to `controller/cmd_skid_steering`.
 
-You can generate the URDF description of theCeol robot using the **urdf_description.py** executable located in the scripts directory.
+Main launch arguments are:
 
-```console
-ros2 run ceol_bringup urdf_description.py mode:simulation base_name:base robot_namespace:ceol > ceol.urdf
+| Argument | Description |
+|---|---|
+| `mode` | execution mode, such as `live`, `simulation_gazebo` or `simulation_gazebo_classic` |
+| `robot_namespace` | namespace of the robot |
+| `base_name` | namespace of the mobile base, usually `base` |
+
+### 3.2) Teleoperation launch
+
+`launch/ceol_teleop.launch.py` starts the mobile base teleoperation stack through `romea_mobile_base_teleop`.
+
+It uses:
+
+* the Ceol robot configuration from `ceol_description/config/ceol.yaml`;
+* the joystick configuration file, usually selected from the `config/` directory of `romea_joystick_utils` according to the joystick type;
+* the teleoperation configuration from `ceol_description/config/teleop.yaml` by default.
+
+The teleoperation node publishes `romea_mobile_base_msgs/SkidSteeringCommand`, consistent with the Ceol skid-steering command type.
+
+To move the robot, the operator must hold either the slow mode or turbo mode button. The joystick axes then command the longitudinal and angular speeds.
+
+Main launch arguments are:
+
+| Argument | Description |
+|---|---|
+| `mode` | execution mode, used to configure simulation time |
+| `joystick_topic` | joystick `sensor_msgs/msg/Joy` topic |
+| `joystick_configuration_file_path` | joystick configuration file, usually selected from `romea_joystick_utils/config/` |
+| `teleop_configuration_file_path` | teleoperation configuration file, defaulting to `ceol_description/config/teleop.yaml` |
+
+![Ceol teleoperation mapping](doc/teleop.jpg)
+
+### 3.3) Gazebo launch
+
+`launch/ceol_gazebo.launch.py` starts a Gazebo or Gazebo Classic simulation and spawns the Ceol entity from the generated URDF.
+
+It supports:
+
+* `simulation_gazebo`, using `ros_gz_sim` and `gz_ros2_control`;
+* `simulation_gazebo_classic`, using `gazebo_ros` and `gazebo_ros2_control`.
+
+The `ros2_control` hardware plugin used in simulation is selected by `ceol_description` from the generated `mode`.
+
+Main launch arguments are:
+
+| Argument | Description |
+|---|---|
+| `mode` | simulation mode, usually `simulation_gazebo` or `simulation_gazebo_classic` |
+| `robot_namespace` | namespace of the robot and simulation entity |
+| `base_name` | namespace of the mobile base, usually `base` |
+
+### 3.4) Implement teleoperation launch
+
+`launch/ceol_implement_teleop.launch.py` starts the teleoperation stack used to command the Ceol rear implement actuators.
+
+This launch file is separate from the mobile base teleoperation launch because it controls the implement side of the robot, not the skid-steering motion controller.
+
+### 3.5) Test launch
+
+`launch/ceol_test.launch.py` starts a compact test setup with:
+
+* the Ceol simulation when the selected mode contains `simulation`;
+* the Ceol base launch;
+* the Ceol teleoperation launch;
+* a joystick node using the selected joystick model.
+
+In simulation mode, the controller manager is provided by the Gazebo integration. In live mode, the base launch starts the standard `controller_manager/ros2_control_node`.
+
+Main launch arguments are:
+
+| Argument | Description |
+|---|---|
+| `mode` | execution mode, usually `simulation_gazebo` for this test setup |
+| `joystick_model` | joystick model used to select the default joystick configuration, such as `microsoft_xbox` or `sony_dualshock4` |
+
+The following diagram gives an overview of the control pipeline started by this test launch file.
+
+![Ceol test pipeline](doc/test_pipeline.jpg)
+
+## 4) Configuration files
+
+The `config/` directory contains:
+
+| File | Purpose |
+|---|---|
+| `controller_manager.yaml` | declares `joint_state_broadcaster` and `MobileBaseEnhancedController2TD` |
+| `mobile_base_controller_live.yaml` | provides common runtime parameters for the live mobile base controller |
+| `mobile_base_controller_simulation.yaml` | provides common runtime parameters for the simulation mobile base controller |
+
+The robot geometry, inertia, joint names and teleoperation defaults are stored in `ceol_description/config/`.
+
+## 5) Relation with the meta-bringup workflow
+
+`ceol_bringup` is the robot-specific extension used when a mobile base meta-description selects:
+
+```yaml
+configuration:
+  manufacturer: agreenculture
+  model: ceol
+  version: ""
 ```
 
-where:
+In that workflow:
 
-- ***base_name***  defines the name of robot mobile base  
-- ***mode*** (choices: ***simulation*** or ***live***) defines the demonstration mode,  
-- **robot_namespace** is the namespace in which the ROS2 nodes are launched. It is also used as a prefix for link and joints of the mobile base. 
+* `romea_mobile_base_meta_bringup` reads the mobile base meta-description;
+* `ceol_bringup` generates Ceol-specific configuration, URDF, `ros2_control` and launch artifacts;
+* `ceol_description` provides the concrete robot model;
+* `ceol_hardware` is used in `live` mode;
+* `romea_mobile_base_gazebo` or `romea_mobile_base_gazebo_classic` is used in Gazebo simulation modes;
+* `romea_mobile_base_teleop` starts the matching skid-steering teleoperation node.
