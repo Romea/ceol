@@ -97,8 +97,9 @@ def launch_setup(context, *args, **kwargs):
         package="romea_cmd_mux",
         executable="cmd_mux_node",
         name="cmd_mux",
-        parameters=[{"topics_type": "romea_mobile_base_msgs/SkidSteeringCommand"}],
-        remappings=[("~/out", "controller/cmd_skid_steering")],
+        # parameters=[{"topics_type": "romea_mobile_base_msgs/SkidSteeringCommand"}],
+        parameters=[{"topics_type": "geometry_msgs/Twist"}],
+        remappings=[("~/out", "controller/cmd_vel")],
         output="screen",
     )
 
