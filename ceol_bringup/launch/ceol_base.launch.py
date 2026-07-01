@@ -31,25 +31,35 @@ import romea_mobile_base_meta_bringup.ros_launch as mobile_base
 def launch_setup(context, *args, **kwargs):
 
     mode = common.get_mode(context)
+
+    cmd_mux = Node(
+        package="romea_cmd_mux",
+        executable="cmd_mux_node",
+        name="cmd_mux",
+        # parameters=[{"topics_type": "romea_mobile_base_msgs/SkidSteeringCommand"}],
+        parameters=[{"topics_type": "geometry_msgs/Twist"}],
+        remappings=[("~/out", "controller/cmd_vel")],
+        output="screen",
+    )
+
     if "replay" in mode:
-        return []
+        return [cmd_mux]
 
     robot_namespace = common.get_robot_namespace(context)
     robot_urdf_description = common.get_robot_urdf_description(context)
     robot_ros2_control_description = common.get_robot_ros2_control_description(context)
 
     base_configuration_file_path = (
-        f'{get_package_share_directory("ceol_description")}/config/ceol.yaml'
+        f"{get_package_share_directory('ceol_description')}/config/ceol.yaml"
     )
 
     controller_manager_configuration_file_path = (
-        f'{get_package_share_directory("ceol_bringup")}/config/controller_manager.yaml'
+        f"{get_package_share_directory('ceol_bringup')}/config/controller_manager.yaml"
     )
 
     if "live" in mode:
         base_controller_configuration_file_path = (
-            get_package_share_directory("ceol_bringup") +
-            "/config/mobile_base_controller_live.yaml"
+            get_package_share_directory("ceol_bringup") + "/config/mobile_base_controller_live.yaml"
         )
     else:
         base_controller_configuration_file_path = (
@@ -91,16 +101,6 @@ def launch_setup(context, *args, **kwargs):
             "base_configuration_file_path": base_configuration_file_path,
             "base_controller_configuration_file_path": base_controller_configuration_file_path,
         }.items(),
-    )
-
-    cmd_mux = Node(
-        package="romea_cmd_mux",
-        executable="cmd_mux_node",
-        name="cmd_mux",
-        # parameters=[{"topics_type": "romea_mobile_base_msgs/SkidSteeringCommand"}],
-        parameters=[{"topics_type": "geometry_msgs/Twist"}],
-        remappings=[("~/out", "controller/cmd_vel")],
-        output="screen",
     )
 
     return [
