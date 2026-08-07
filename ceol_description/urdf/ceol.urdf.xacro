@@ -10,12 +10,15 @@
   <xacro:include filename="$(find ceol_description)/urdf/ceol.xacro" />
   <xacro:ceol mode="$(arg mode)" prefix="$(arg prefix)" />
 
-  <xacro:include filename="$(find ceol_description)/urdf/ceol.simulation.xacro" />
+  <xacro:if value="${'gazebo' in '$(arg mode)'}">
+    <xacro:include 
+      filename="$(find romea_mobile_base_description)/urdf/gazebo_ros2_control.xacro" />
+    <xacro:gazebo_ros2_control
+      mode="$(arg mode)"
+      base_name="$(arg base_name)"
+      ros_prefix="$(arg ros_prefix)"
+      controller_manager_config_yaml_file="$(arg controller_manager_config_yaml_file)" />
+  </xacro:if>
 
-  <xacro:ceol_simulation
-    mode="$(arg mode)"
-    base_name="$(arg base_name)"
-    ros_prefix="$(arg ros_prefix)"
-    controller_manager_config_yaml_file="$(arg controller_manager_config_yaml_file)" />
 
 </robot>

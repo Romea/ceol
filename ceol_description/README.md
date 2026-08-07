@@ -60,7 +60,7 @@ Depending on the selected mode, the `ros2_control` description selects:
 | `live` | `ceol_hardware/CeolHardware` |
 | `simulation`, `simulation_gazebo_classic` | `romea_mobile_base_gazebo/GazeboSystemInterface2THD` |
 | `simulation_gazebo` | `romea_mobile_base_gazebo/GazeboSystemInterface2THD` |
-| `simulation_4dv`, `simulation_isaac` | `romea_mobile_base_hardware/GenericHardwareSystemInterface2THD` |
+| `simulation_4dv`, `simulation_isaac` | `romea_mobile_base_hardware/GenericHardwareSystemInterface` |
 
 ## 4) Python API
 

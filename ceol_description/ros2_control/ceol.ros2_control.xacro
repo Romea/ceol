@@ -35,26 +35,37 @@
     <xacro:property name="maximal_wheel_speed"
       value="${props['tracks_speed_control']['command']['maximal_speed']}" />
 
-
-    <!-- simulation plugins -->
-    <xacro:if value="${'simulation' in mode}">
-      <xacro:if value="${'gazebo' in  mode}">
-        <xacro:property
-          name="simulation_hardware_plugin"
-          value="romea_mobile_base_gazebo/GazeboSystemInterface2THD" />
-      </xacro:if>
-
-      <xacro:if value="${'4dv' in  mode or 'isaac' in mode}">
-        <xacro:property
-          name="simulation_hardware_plugin"
-          value="romea_mobile_base_hardware/GenericHardwareSystemInterface2THD" />
-      </xacro:if>
+    <!-- simulation control -->
+    <xacro:if value="${'simulation_gazebo' in mode}">
+      <xacro:simulation_base_control
+        mode="${mode}" 
+        base_name="${base_name}"/> 
     </xacro:if>
 
-    <xacro:property name="live_hardware_plugin"
-      value="ceol_hardware/CeolHardware" />
+    <xacro:if value="${mode == 'simulation_gazebo_classic'}">
+      <xacro:base_control
+        mode="${mode}"
+        base_name="${base_name}"
+        hardware_plugin="romea_mobile_base_gazebo/GazeboSystemInterface4WS4WD" />
+    </xacro:if>
 
-    <xacro:base_control mode="${mode}" base_name="${base_name}" />
+    <xacro:if value="${'4dv' in mode or 'isaac' in mode}">
+      <xacro:base_control
+        mode="${mode}"
+        base_name="${base_name}"
+        hardware_plugin="romea_mobile_base_simulation/GenericSimulationSystemInterface" />
+    </xacro:if>
+
+    <!-- live control -->
+    <xacro:if value="${mode =='live'}">
+      <ros2_control name="${prefix}${base_name}" type="system">
+        <hardware>
+          <plugin>ceol_hardware/CeolHardware</plugin>
+          <xacro:base_control_parameters/>
+        </hardware>
+        <xacro:base_control_joints mode="${mode}"/>
+      </ros2_control>
+    </xacro:if>
 
   </xacro:macro>
 

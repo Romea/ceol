@@ -66,7 +66,11 @@ def test_hardware_plugin_name():
         "ros2_control/hardware/plugin"
     ).text == "ceol_hardware/CeolHardware"
 
-    assert ros2_control_xml("simulation").find(
+    assert ros2_control_xml("simulation_gazebo").find(
+        "ros2_control/hardware/plugin"
+    ).text == "romea_mobile_base_gazebo/GazeboSystemInterface"
+
+    assert ros2_control_xml("simulation_gazebo_classic").find(
         "ros2_control/hardware/plugin"
     ).text == "romea_mobile_base_gazebo/GazeboSystemInterface2THD"
 
