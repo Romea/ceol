@@ -61,6 +61,7 @@
       <ros2_control name="${prefix}${base_name}" type="system">
         <hardware>
           <plugin>ceol_hardware/CeolHardware</plugin>
+          <xacro:base_control_parameters interface_name="${base_name}"/>
           <xacro:base_control_parameters/>
         </hardware>
         <xacro:base_control_joints mode="${mode}"/>
