@@ -36,7 +36,7 @@
       value="${props['tracks_speed_control']['command']['maximal_speed']}" />
 
     <!-- simulation control -->
-    <xacro:if value="${'simulation_gazebo' in mode}">
+    <xacro:if value="${'simulation_gazebo' == mode}">
       <xacro:simulation_base_control
         mode="${mode}" 
         base_name="${base_name}"/> 
