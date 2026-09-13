@@ -98,7 +98,9 @@
 
   <xacro:macro name="ceol" params="mode prefix">
     <xacro:chassis>
-      <xacro:chassis_visual />
+      <chassis_visuals>
+        <xacro:chassis_visual />
+      </chassis_visuals>
       <xacro:left_sprocket_wheel_visual />
       <xacro:right_sprocket_wheel_visual />
       <xacro:left_idler_wheel_visual />
