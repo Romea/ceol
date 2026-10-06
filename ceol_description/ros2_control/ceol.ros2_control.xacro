@@ -3,39 +3,11 @@
 
   <xacro:macro name="ceol_ros2_control" params="mode prefix base_name">
 
-    <xacro:include
-      filename="$(find romea_mobile_base_description)/ros2_control/base2THD.ros2_control.xacro" />
+    <xacro:include filename="$(find romea_mobile_base_description)/ros2_control/base2THD.ros2_control.xacro" />
 
-    <xacro:property name="conf" value="$(find ceol_description)/config/ceol.yaml" />
-    <xacro:property name="props" value="${load_yaml(conf)}" />
+    <xacro:include filename="$(find ceol_description)/urdf/ceol_base_properties.xacro" />
 
 
-    <!-- Joint names -->
-    <xacro:property name="left_sprocket_wheel_spinning_joint"
-      value="${props['joints']['left_sprocket_wheel_spinning_joint_name']}" />
-    <xacro:property name="right_sprocket_wheel_spinning_joint"
-      value="${props['joints']['right_sprocket_wheel_spinning_joint_name']}" />
-    <xacro:property name="front_left_idler_wheel_spinning_joint"
-      value="${props['joints']['front_left_idler_wheel_spinning_joint_name']}" />
-    <xacro:property name="front_right_idler_wheel_spinning_joint"
-      value="${props['joints']['front_right_idler_wheel_spinning_joint_name']}" />
-    <xacro:property name="rear_left_idler_wheel_spinning_joint"
-      value="${props['joints']['rear_left_idler_wheel_spinning_joint_name']}" />
-    <xacro:property name="rear_right_idler_wheel_spinning_joint"
-      value="${props['joints']['rear_right_idler_wheel_spinning_joint_name']}" />
-
-    <!-- Geometry -->
-    <xacro:property name="sprocket_wheel_radius"
-      value="${props['geometry']['tracks']['sprocket_wheel']['radius']}" />
-    <xacro:property name="idler_wheel_radius"
-      value="${props['geometry']['tracks']['front_idler_wheel']['radius']}" />
-    <xacro:property name="track_thickness"
-      value="${props['geometry']['tracks']['thickness']}" />
-
-    <xacro:property name="maximal_wheel_speed"
-      value="${props['tracks_speed_control']['command']['maximal_speed']}" />
-
-    <!-- simulation control -->
     <xacro:if value="${'simulation_gazebo' == mode}">
       <xacro:simulation_base_control
         mode="${mode}" 

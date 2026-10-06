@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="base_conf" 
+    value="$(find ceol_description)/config/ceol.yaml" />
+
+  <xacro:property name="base_props"
+    value="${xacro.load_yaml(base_conf)}" />
+
+  <!-- Link names -->
+  <xacro:property name="base_link"
+    value="${base_props['links']['base_link_name']}" />
+  <xacro:property name="base_footprint_link"
+    value="${base_props['links']['base_footprint_link_name']}" />
+  <xacro:property name="inertial_link"
+    value="${base_props['links']['inertial_link_name']}" />
+  <xacro:property name="left_sprocket_wheel_spinning_link"
+    value="${base_props['links']['left_sprocket_wheel_spinning_link_name']}" />
+  <xacro:property name="right_sprocket_wheel_spinning_link"
+    value="${base_props['links']['right_sprocket_wheel_spinning_link_name']}" />
+  <xacro:property name="front_left_idler_wheel_spinning_link"
+    value="${base_props['links']['front_left_idler_wheel_spinning_link_name']}" />
+  <xacro:property name="front_right_idler_wheel_spinning_link"
+    value="${base_props['links']['front_right_idler_wheel_spinning_link_name']}" />
+  <xacro:property name="rear_left_idler_wheel_spinning_link"
+    value="${base_props['links']['rear_left_idler_wheel_spinning_link_name']}" />
+  <xacro:property name="rear_right_idler_wheel_spinning_link"
+    value="${base_props['links']['rear_right_idler_wheel_spinning_link_name']}" />
+  <xacro:property name="three_point_hitch_link"
+    value="${base_props['links']['three_point_hitch_link_name']}" />
+  <xacro:property name="implement_link"
+    value="${base_props['links']['implement_link_name']}" />
+
+  <!-- Joint names -->
+  <xacro:property name="base_footprint_joint"
+    value="${base_props['joints']['base_footprint_joint_name']}" />
+  <xacro:property name="inertial_joint"
+    value="${base_props['joints']['inertial_joint_name']}" />
+  <xacro:property name="left_sprocket_wheel_spinning_joint"
+    value="${base_props['joints']['left_sprocket_wheel_spinning_joint_name']}" />
+  <xacro:property name="right_sprocket_wheel_spinning_joint"
+    value="${base_props['joints']['right_sprocket_wheel_spinning_joint_name']}" />
+  <xacro:property name="front_left_idler_wheel_spinning_joint"
+    value="${base_props['joints']['front_left_idler_wheel_spinning_joint_name']}" />
+  <xacro:property name="front_right_idler_wheel_spinning_joint"
+    value="${base_props['joints']['front_right_idler_wheel_spinning_joint_name']}" />
+  <xacro:property name="rear_left_idler_wheel_spinning_joint"
+    value="${base_props['joints']['rear_left_idler_wheel_spinning_joint_name']}" />
+  <xacro:property name="rear_right_idler_wheel_spinning_joint"
+    value="${base_props['joints']['rear_right_idler_wheel_spinning_joint_name']}" />
+  <xacro:property name="three_point_hitch_joint"
+    value="${base_props['joints']['three_point_hitch_joint_name']}" />
+  <xacro:property name="implement_joint"
+    value="${base_props['joints']['implement_joint_name']}" />
+
+  <!-- Chassis geometry -->
+  <xacro:property name="aabb_length"
+    value="${base_props['geometry']['aabb']['length']}" />
+  <xacro:property name="aabb_width"
+    value="${base_props['geometry']['aabb']['width']}" />
+  <xacro:property name="aabb_height"
+    value="${base_props['geometry']['aabb']['height']}" />
+  <xacro:property name="aabb_center_x"
+    value="${base_props['geometry']['aabb']['center'][0]}" />
+  <xacro:property name="aabb_center_y"
+    value="${base_props['geometry']['aabb']['center'][1]}" />
+  <xacro:property name="aabb_center_z"
+    value="${base_props['geometry']['aabb']['center'][2]}" />
+  <xacro:property name="track"
+    value="${base_props['geometry']['tracks_distance']}" />
+  <xacro:property name="track_width"
+    value="${base_props['geometry']['tracks']['width']}" />
+  <xacro:property name="track_thickness"
+    value="${base_props['geometry']['tracks']['thickness']}" />
+  <xacro:property name="body_reference_x"
+    value="${base_props['control_point'][0]}" />
+  <xacro:property name="ground_clearance"
+    value="${base_props['geometry']['ground_clearance']}" />
+  <xacro:property name="chassis_height"
+    value="${base_props['geometry']['tracks']['front_idler_wheel']['radius']}" />
+  <xacro:property name="wheelbase"
+    value="${front_idler_wheel_x-rear_idler_wheel_x}" />
+
+  <!-- Chassis inertia -->
+  <xacro:property name="mass_base"
+    value="${base_props['inertia']['mass']}" />
+  <xacro:property name="mass_center_x"
+    value="${base_props['inertia']['center'][0]}" />
+  <xacro:property name="mass_center_y"
+    value="${base_props['inertia']['center'][1]}" />
+  <xacro:property name="mass_center_z"
+    value="${base_props['inertia']['center'][2]}" />
+
+  <!-- Wheel geometry -->
+  <xacro:property name="front_idler_wheel_x"
+    value="${base_props['geometry']['tracks']['front_idler_wheel']['x']}" />
+  <xacro:property name="rear_idler_wheel_x"
+    value="${base_props['geometry']['tracks']['rear_idler_wheel']['x']}" />
+  <xacro:property name="idler_wheel_radius"
+    value="${base_props['geometry']['tracks']['front_idler_wheel']['radius']}" />
+  <xacro:property name="roller_wheel_radius"
+    value="${base_props['geometry']['tracks']['roller_wheels']['radius']}" />
+  <xacro:property name="sprocket_wheel_radius"
+    value="${base_props['geometry']['tracks']['sprocket_wheel']['radius']}" />
+  <xacro:property name="sprocket_wheel_x"
+    value="${base_props['geometry']['tracks']['sprocket_wheel']['x']}" />
+  <xacro:property name="sprocket_wheel_z"
+    value="${base_props['geometry']['tracks']['sprocket_wheel']['z']}" />
+
+  <!-- Wheel inertia -->
+  <xacro:property name="idler_wheel_mass"
+    value="${base_props['geometry']['tracks']['front_idler_wheel']['mass']}" />
+  <xacro:property name="roller_wheel_mass"
+    value="${base_props['geometry']['tracks']['roller_wheels']['mass']}" />
+  <xacro:property name="sprocket_wheel_mass"
+    value="${base_props['geometry']['tracks']['sprocket_wheel']['mass']}" />
+
+  <!-- Wheel speed control -->
+  <xacro:property name="maximal_wheel_speed"
+    value="${base_props['tracks_speed_control']['command']['maximal_speed']}" />
+  <xacro:property name="maximal_wheel_torque"
+    value="10000000" />
+
+</robot>
